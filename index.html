@@ -30,6 +30,7 @@
         <button class="nav-item active" data-view="dashboard"><span class="nav-icon">⌂</span>Resumen</button>
         <button class="nav-item" data-view="online"><span class="nav-icon">◎</span>Loc Lac online</button>
         <button class="nav-item" data-view="village"><span class="nav-icon">⌂</span>Aldea de Moga</button>
+        <button class="nav-item" data-view="quests"><span class="nav-icon">☷</span>Misiones</button>
         <button class="nav-item" data-view="hunts"><span class="nav-icon">◈</span>Monstruos</button>
         <button class="nav-item" data-view="materials"><span class="nav-icon">▦</span>Materiales</button>
         <button class="nav-item" data-view="save"><span class="nav-icon">⌕</span>Inspector de save</button>
@@ -98,6 +99,22 @@
           <div class="monster-grid" id="monsterGrid"></div>
         </section>
 
+        <section class="view" id="view-quests">
+          <div class="section-intro"><div><div class="eyebrow">CATÁLOGO DE MISIONES</div><h2>Encuentra qué jugar</h2></div><p>Filtra las misiones incluidas por zona, rango, objetivo y registro en tu save. “Sin completar” solo describe la bandera guardada; no confirma que la misión esté desbloqueada.</p></div>
+          <div class="quest-filters panel" id="questFilters">
+            <label class="quest-search-label">Buscar misión o objetivo<input id="questSearch" type="search" placeholder="Nombre, monstruo u objeto…"></label>
+            <label>Zona<select id="questRegion"><option value="all">Todas</option><option value="Village">Aldea de Moga</option><option value="City">Loc Lac</option></select></label>
+            <label>Rango<select id="questRank"><option value="all">Todos</option><option value="Low">Bajo</option><option value="High">Alto</option></select></label>
+            <label>Objetivo<select id="questGoal"><option value="all">Todos</option></select></label>
+            <label>Progresión<select id="questProgression"><option value="all">Todas</option><option value="online-key">Clave · Loc Lac</option><option value="online-urgent">Urgente · Loc Lac</option><option value="village-key">Clave · Moga</option><option value="village-urgent">Urgente · Moga</option><option value="other">Sin rol principal</option></select></label>
+            <label>Registro del save<select id="questStatus"><option value="all">Todos</option><option value="completed">Completadas</option><option value="not-completed">Sin completar · registrables</option><option value="untracked">Sin bandera en el save</option></select></label>
+            <button type="button" class="button button-secondary" id="resetQuestFilters">Limpiar filtros</button>
+          </div>
+          <div class="quest-catalog-toolbar"><span id="questCount" class="muted" role="status" aria-live="polite"></span><span class="muted">Objetivos y tipos según el catálogo local · sin tablas de recompensas</span></div>
+          <div class="quest-catalog" id="questCatalog"></div>
+          <p class="small-note">El catálogo no contiene tablas completas de recompensas ni confirma disponibilidad/desbloqueo de cada misión. El estado se basa exclusivamente en las banderas que esta versión puede leer.</p>
+        </section>
+
         <section class="view" id="view-materials">
           <div class="section-intro"><div><div class="eyebrow">BAÚL DE OBJETOS</div><h2>Lo que tienes guardado</h2></div><p>Lectura de los espacios del baúl. No incluye objetos que estén solamente en la bolsa del cazador.</p></div>
           <div class="request-panel panel" id="requestPanel"></div>
@@ -134,7 +151,7 @@
         </section>
       </div>
 
-      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.3.0-preview.3</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
+      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.3.0-preview.4</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
     </main>
   </div>
   <dialog id="saveCandidateDialog" class="save-candidate-dialog">

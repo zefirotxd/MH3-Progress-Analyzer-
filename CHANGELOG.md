@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0-preview.4 · compilación local
+
+- Add a searchable quest catalog for Moga and Loc Lac with region, rank, objective, progression-role and save-flag filters.
+- Show objective targets with the best item or monster name available in the local catalog.
+- Distinguish completed quests, incomplete quests with a save flag, and quests without a known save flag; do not imply that an incomplete quest is unlocked.
+
 ## 0.3.0-preview.3 · compilación local
 
 - Add a locally stored weapon shopping list that combines material requirements across multiple forge routes and repeated copies.

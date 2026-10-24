@@ -10,6 +10,7 @@
 - Add keyboard focus indicators, navigation state announcements and reduced-motion support.
 - Plan craft and upgrade routes for the six blademaster weapon classes. Compare all route materials with the selected hunter's item box and rank routes by missing quantities.
 - Combine multiple weapon routes and copies in a local shopping list; aggregate duplicate materials, subtract the selected hunter's item-box stock only once, and retain the list between app launches.
+- Browse all catalogued Moga and Loc Lac quests with name/target search and region, rank, objective, progression-role and save-flag filters. Separate incomplete trackable quests from quests with no known save flag.
 - Let the user specify a manually owned starting weapon; the save parser does not claim to know the hunter's equipment.
 - Add decorations to armor pieces, enforce each piece's slot budget and include their skill points in the set summary.
 - Apply stacked `Torso Up` to chest armor and decorations in the armor skill simulation.
@@ -28,7 +29,7 @@
 - Add armor costs to the shopping list only when a reliable recipe source is available; the current catalog has no armor forge recipes.
 - Link missing materials to quests only after adding verified quest reward and gathering-node data; the bundled quest catalog currently describes objectives, not acquisition rewards.
 - Add optional drop-rate summaries only after checking source coverage; do not make a partial event-quest catalog look complete.
-- Add quest filters by rank, monster, objective and location, and mark which quest requirements are confirmed by the current save.
+- Mark quest requirements for specific progression gates with explicit evidence, without implying that every incomplete quest is currently available.
 
 ### 3. Learn the save format safely
 

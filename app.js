@@ -78,6 +78,15 @@
     [0x7d3, 'Trial of the Sea Dragon'], [0x7d4, 'Fell the Lagiacrus!'],
     [0x7d5, 'Save Moga Village!'], [0x7d6, 'The Decisive Battle'],
   ]);
+  const QUEST_GOAL_LABELS = {
+    gathering: 'Recolección', slay: 'Eliminar', hunt: 'Cazar', capture: 'Capturar', repel: 'Repeler', other: 'Objetivo especial',
+  };
+  const QUEST_TYPE_LABELS = {
+    gather: 'Recolección', hunt: 'Cacería', capture: 'Captura', escort: 'Escolta', slay: 'Eliminación',
+    multihunt: 'Cacería múltiple', harvest: 'Cosecha', repel: 'Repeler',
+  };
+  const QUEST_REGION_LABELS = { Village: 'Aldea de Moga', City: 'Loc Lac' };
+  const QUEST_RANK_LABELS = { Low: 'Bajo', High: 'Alto' };
 
   const ONLINE_STAGES = [
     { gate: 8, stars: '1★', urgent: 0x36b0, urgentName: 'Leading the Charge', nextStars: '2★', keys: [0x2711, 0x2714, 0x2715, 0x2718, 0x2716] },
@@ -96,6 +105,23 @@
     { phase: '5★', to: '6★', keys: [0x410, 0x414, 0x415, 0x419], urgent: 0x7d5, urgentName: 'Save Moga Village!' },
     { phase: 'Posjuego', to: 'Final', keys: [], urgent: 0x7d6, urgentName: 'The Decisive Battle' },
   ];
+  const QUEST_PROGRESSION_ROLES = new Map();
+  const addQuestRole = (id, role) => {
+    if (!QUEST_PROGRESSION_ROLES.has(id)) QUEST_PROGRESSION_ROLES.set(id, new Set());
+    QUEST_PROGRESSION_ROLES.get(id).add(role);
+  };
+  for (const stage of ONLINE_STAGES) {
+    stage.keys.forEach((id) => addQuestRole(id, 'online-key'));
+    addQuestRole(stage.urgent, 'online-urgent');
+  }
+  for (const stage of VILLAGE_STEPS) {
+    stage.keys.forEach((id) => addQuestRole(id, 'village-key'));
+    addQuestRole(stage.urgent, 'village-urgent');
+  }
+  const QUEST_PROGRESSION_LABELS = {
+    'online-key': 'Clave · Loc Lac', 'online-urgent': 'Urgente · Loc Lac',
+    'village-key': 'Clave · Moga', 'village-urgent': 'Urgente · Moga',
+  };
 
   const VILLAGE_GROUPS = [
     { title: 'Aldea · 1 estrella', min: 0x3e8, max: 0x3ed },
@@ -177,7 +203,7 @@
   function forgeGoalKey(type, targetId, startId, weaponIds) {
     return `${type}:${targetId}:${startId ?? 'new'}:${weaponIds.join('>')}`;
   }
-  const appState = { profiles: [], files: [], selected: 0, view: 'dashboard', monsterSearch: '', itemSearch: '', armorStyle: 'blade', set: {}, decorations: {}, weaponClass: WEAPON_CLASSES[0] || '', weaponTarget: '', weaponStart: '', weaponRoute: 0, weaponShoppingList: loadWeaponShoppingList() };
+  const appState = { profiles: [], files: [], selected: 0, view: 'dashboard', monsterSearch: '', itemSearch: '', questSearch: '', questRegion: 'all', questRank: 'all', questGoal: 'all', questProgression: 'all', questStatus: 'all', armorStyle: 'blade', set: {}, decorations: {}, weaponClass: WEAPON_CLASSES[0] || '', weaponTarget: '', weaponStart: '', weaponRoute: 0, weaponShoppingList: loadWeaponShoppingList() };
   const rankThreshold = (rank) => {
     const target = Math.max(0, Math.floor(rank));
     if (target === 0) return 0;
@@ -593,6 +619,71 @@
     $('#monsterGrid').innerHTML = filtered.length ? filtered.map((monster) => `<article class="monster-card"><div><strong>${escapeHtml(monster.name)}</strong><small>${monster.count} misión${monster.count === 1 ? '' : 'es'} completada${monster.count === 1 ? '' : 's'} como objetivo · ${hex(monster.id)}</small></div><span class="monster-count">${monster.count}</span></article>`).join('') : '<div class="table-empty">No aparecen objetivos de monstruo en las misiones completadas que puede leer el save.</div>';
   }
 
+  function questTargetSummary(quest) {
+    const isGathering = quest.goal === 'gathering' || ['gather', 'harvest'].includes(quest.type);
+    return Object.entries(quest.targets || {}).map(([rawId, rawAmount]) => {
+      const id = Number(rawId);
+      const name = isGathering
+        ? ITEM_NAMES.get(id) || MONSTER_NAMES.get(id)
+        : MONSTER_NAMES.get(id) || ITEM_NAMES.get(id);
+      const amount = Number(rawAmount);
+      return `${name || `ID ${id}`}${amount > 1 ? ` ×${formatNumber(amount)}` : ''}`;
+    }).join(', ') || 'El catálogo no detalla el objetivo';
+  }
+
+  function questSaveStatus(profile, quest) {
+    if (profile.completed.has(quest.id)) return { label: 'Completada', className: 'quest-status-done' };
+    if (QUEST_INDEX.has(quest.id)) return { label: 'Sin completar · registrable', className: 'quest-status-open' };
+    return { label: 'Sin bandera en el save', className: 'quest-status-unknown' };
+  }
+
+  function renderQuestCatalog(profile) {
+    const search = appState.questSearch.trim().toLocaleLowerCase('es');
+    const filtered = DATA.quests.filter((quest) => {
+      if (appState.questRegion !== 'all' && quest.region !== appState.questRegion) return false;
+      if (appState.questRank !== 'all' && quest.rank !== appState.questRank) return false;
+      if (appState.questGoal !== 'all' && quest.goal !== appState.questGoal) return false;
+      const progressionRoles = QUEST_PROGRESSION_ROLES.get(quest.id) || new Set();
+      if (appState.questProgression === 'other' && progressionRoles.size > 0) return false;
+      if (appState.questProgression !== 'all' && appState.questProgression !== 'other' && !progressionRoles.has(appState.questProgression)) return false;
+      const tracked = QUEST_INDEX.has(quest.id);
+      const completed = profile.completed.has(quest.id);
+      if (appState.questStatus === 'completed' && !completed) return false;
+      if (appState.questStatus === 'not-completed' && (!tracked || completed)) return false;
+      if (appState.questStatus === 'untracked' && tracked) return false;
+      if (!search) return true;
+      const searchable = [
+        quest.name,
+        QUEST_REGION_LABELS[quest.region] || quest.region,
+        quest.region,
+        QUEST_RANK_LABELS[quest.rank] || quest.rank,
+        quest.rank,
+        QUEST_TYPE_LABELS[quest.type] || quest.type,
+        quest.type,
+        QUEST_GOAL_LABELS[quest.goal] || quest.goal,
+        quest.goal,
+        hex(quest.id),
+        [...progressionRoles].map((role) => QUEST_PROGRESSION_LABELS[role]),
+        questTargetSummary(quest),
+      ].join(' ').toLocaleLowerCase('es');
+      return searchable.includes(search);
+    }).sort((a, b) => {
+      const regionOrder = { Village: 0, City: 1 };
+      const rankOrder = { Low: 0, High: 1 };
+      return (regionOrder[a.region] ?? 9) - (regionOrder[b.region] ?? 9)
+        || (rankOrder[a.rank] ?? 9) - (rankOrder[b.rank] ?? 9)
+        || a.name.localeCompare(b.name);
+    });
+    const completedCount = filtered.filter((quest) => profile.completed.has(quest.id)).length;
+    $('#questCount').textContent = `${formatNumber(filtered.length)} de ${formatNumber(DATA.quests.length)} misiones · ${formatNumber(completedCount)} completadas en esta selección`;
+    $('#questCatalog').innerHTML = filtered.length ? filtered.map((quest) => {
+      const status = questSaveStatus(profile, quest);
+      const target = questTargetSummary(quest);
+      const progressionTags = [...(QUEST_PROGRESSION_ROLES.get(quest.id) || [])].map((role) => `<span class="quest-role-tag">${escapeHtml(QUEST_PROGRESSION_LABELS[role])}</span>`).join('');
+      return `<article class="quest-catalog-card"><div class="quest-catalog-top"><div><h3>${escapeHtml(quest.name)}</h3><div class="quest-catalog-tags"><span>${escapeHtml(QUEST_REGION_LABELS[quest.region] || quest.region)}</span><span>Rango ${escapeHtml(QUEST_RANK_LABELS[quest.rank] || quest.rank)}</span>${progressionTags}</div></div><span class="quest-save-status ${status.className}">${status.label}</span></div><div class="quest-catalog-details"><div><small>Tipo</small><strong>${escapeHtml(QUEST_TYPE_LABELS[quest.type] || quest.type || 'Sin tipo')}</strong></div><div><small>Objetivo registrado</small><strong>${escapeHtml(QUEST_GOAL_LABELS[quest.goal] || quest.goal || 'Sin objetivo')}</strong></div><div class="quest-target-detail"><small>Objetivos</small><strong>${escapeHtml(target)}</strong></div></div><div class="quest-catalog-id">ID ${hex(quest.id)}${QUEST_INDEX.has(quest.id) ? ' · bandera compatible con el save' : ' · sin bandera compatible conocida'}</div></article>`;
+    }).join('') : '<div class="quest-catalog-empty">No hay misiones con estos filtros. Prueba otra zona, rango u objetivo.</div>';
+  }
+
   function findItem(name) {
     const normalized = name.toLocaleLowerCase('en');
     return DATA.items.find((item) => item.name.toLocaleLowerCase('en') === normalized)
@@ -928,6 +1019,7 @@
       renderDashboard(profile);
       renderOnline(profile);
       renderVillage(profile);
+      renderQuestCatalog(profile);
       renderHunts(profile);
       renderMaterials(profile);
       renderSaveInspector();
@@ -953,6 +1045,7 @@
       dashboard: ['PANEL DEL CAZADOR', 'Tu progreso, de un vistazo'],
       online: ['RANGO DE CAZADOR', 'Loc Lac online'],
       village: ['PROGRESO DE HISTORIA', 'Aldea de Moga'],
+      quests: ['CATÁLOGO DE MISIONES', 'Explorar misiones'],
       hunts: ['OBJETIVOS COMPLETADOS', 'Monstruos'],
       materials: ['BAÚL DE OBJETOS', 'Materiales'],
       save: ['DIAGNÓSTICO DE PARTIDA', 'Inspector de save'],
@@ -963,6 +1056,38 @@
       $('#pageTitle').textContent = names[view][1];
     }
   }
+
+  const questGoals = [...new Set(DATA.quests.map((quest) => quest.goal).filter(Boolean))]
+    .sort((a, b) => (QUEST_GOAL_LABELS[a] || a).localeCompare(QUEST_GOAL_LABELS[b] || b));
+  $('#questGoal').insertAdjacentHTML('beforeend', questGoals.map((goal) => `<option value="${escapeHtml(goal)}">${escapeHtml(QUEST_GOAL_LABELS[goal] || goal)}</option>`).join(''));
+  const updateQuestFilters = () => {
+    appState.questSearch = $('#questSearch').value;
+    appState.questRegion = $('#questRegion').value;
+    appState.questRank = $('#questRank').value;
+    appState.questGoal = $('#questGoal').value;
+    appState.questProgression = $('#questProgression').value;
+    appState.questStatus = $('#questStatus').value;
+    const profile = currentProfile();
+    if (profile) renderQuestCatalog(profile);
+  };
+  $('#questSearch').addEventListener('input', updateQuestFilters);
+  $('#questFilters').addEventListener('change', updateQuestFilters);
+  $('#resetQuestFilters').addEventListener('click', () => {
+    appState.questSearch = '';
+    appState.questRegion = 'all';
+    appState.questRank = 'all';
+    appState.questGoal = 'all';
+    appState.questProgression = 'all';
+    appState.questStatus = 'all';
+    $('#questSearch').value = '';
+    $('#questRegion').value = 'all';
+    $('#questRank').value = 'all';
+    $('#questGoal').value = 'all';
+    $('#questProgression').value = 'all';
+    $('#questStatus').value = 'all';
+    const profile = currentProfile();
+    if (profile) renderQuestCatalog(profile);
+  });
 
   $('#saveFiles').addEventListener('change', (event) => safelyLoadSaves(event.target.files));
   window.mh3Desktop?.onOpenSaveDialog(async () => {
