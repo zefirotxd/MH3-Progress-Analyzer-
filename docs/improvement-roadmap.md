@@ -14,6 +14,7 @@
 - Let the user specify a manually owned starting weapon; the save parser does not claim to know the hunter's equipment.
 - Add decorations to armor pieces, enforce each piece's slot budget and include their skill points in the set summary.
 - Apply stacked `Torso Up` to chest armor and decorations in the armor skill simulation.
+- Export/import versioned share codes for armor pieces and decorations; validate armor style, piece IDs and jewel slot usage before applying a code.
 - Keep upstream data snapshots committed so app builds remain offline; provide a separate maintainer sync command.
 
 ## Next improvements, ordered by user value and evidence
@@ -22,7 +23,6 @@
 
 - Add weapon decorations and charms only after checking their slot and point semantics against MH3 data.
 - Add armor forge costs when a reliable source becomes available. The current dataset has armor statistics, but no armor recipes.
-- Export/import a compact set code so players can share builds without sharing a save.
 
 ### 2. Help answer “what do I need next?”
 

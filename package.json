@@ -1,6 +1,6 @@
 {
   "name": "mh3-progress-analyzer",
-  "version": "0.3.0-preview.4",
+  "version": "0.3.0-preview.5",
   "private": true,
   "author": "zefirotxd",
   "description": "Analizador local y de solo lectura de progreso para Monster Hunter Tri",

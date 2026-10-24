@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0-preview.5 · compilación local
+
+- Add versioned share codes for armor sets and decorations, with validation against the local armor style, piece slots and decoration catalog before import.
+- Keep shared set data separate from save files and provide clipboard copy with a manual-copy fallback.
+
 ## 0.3.0-preview.4 · compilación local
 
 - Add a searchable quest catalog for Moga and Loc Lac with region, rank, objective, progression-role and save-flag filters.

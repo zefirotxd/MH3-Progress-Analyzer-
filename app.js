@@ -896,6 +896,62 @@
   }
   const SKILL_TREES = armorSkills();
 
+  function makeSetShareCode() {
+    const payload = {
+      version: 1,
+      style: appState.armorStyle,
+      pieces: Object.fromEntries(PIECE_TYPES.filter((type) => appState.set[type] != null).map((type) => [type, appState.set[type]])),
+      jewels: Object.fromEntries(PIECE_TYPES.filter((type) => (appState.decorations[type] || []).some(Boolean)).map((type) => [type, appState.decorations[type].filter(Boolean)])),
+    };
+    const bytes = new TextEncoder().encode(JSON.stringify(payload));
+    let binary = '';
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return `MH3SET1:${btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')}`;
+  }
+
+  function parseSetShareCode(rawCode) {
+    const code = String(rawCode || '').trim();
+    if (code.length > 16000) throw new Error('El código supera el tamaño máximo permitido.');
+    if (!code.startsWith('MH3SET1:')) throw new Error('El código no es de MH3 Progress Analyzer o usa una versión no compatible.');
+    const encoded = code.slice('MH3SET1:'.length).replace(/-/g, '+').replace(/_/g, '/');
+    if (!encoded || !/^[A-Za-z0-9+/]+$/.test(encoded)) throw new Error('El código contiene caracteres no válidos.');
+    const binary = atob(encoded + '='.repeat((4 - encoded.length % 4) % 4));
+    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    const payload = JSON.parse(new TextDecoder().decode(bytes));
+    if (payload?.version !== 1) throw new Error('Esta versión del código de set no es compatible.');
+    if (!['blade', 'gunner'].includes(payload.style)) throw new Error('El código tiene un tipo de armadura no válido.');
+    const nextSet = {};
+    const nextDecorations = {};
+    for (const type of PIECE_TYPES) {
+      const rawId = payload.pieces?.[type];
+      const rawJewels = payload.jewels?.[type] ?? [];
+      if (!Array.isArray(rawJewels) || rawJewels.length > 20 || rawJewels.some((name) => typeof name !== 'string')) {
+        throw new Error(`La lista de joyas de ${ARMOR_BY_TYPE[type]} no es válida.`);
+      }
+      const jewels = rawJewels.filter(Boolean);
+      if (rawId == null) {
+        if (jewels.length) throw new Error(`El código asigna joyas sin una pieza de ${ARMOR_BY_TYPE[type]}.`);
+        continue;
+      }
+      const id = Number(rawId);
+      const piece = ARMOR.find((entry) => entry.type === type && entry.id === id && entry[payload.style]);
+      if (!Number.isSafeInteger(id) || !piece) throw new Error(`La pieza de ${ARMOR_BY_TYPE[type]} no existe en este catálogo.`);
+      const decorations = jewels.map((name) => DATA.decorations.find((entry) => entry.name === name));
+      if (decorations.some((decoration) => !decoration)) throw new Error(`El código contiene una joya desconocida para ${ARMOR_BY_TYPE[type]}.`);
+      const usedSlots = decorations.reduce((total, decoration) => total + decoration.slotUsage, 0);
+      if (usedSlots > piece.slots) throw new Error(`${piece.name} no tiene suficientes espacios para las joyas del código.`);
+      nextSet[type] = id;
+      if (jewels.length) nextDecorations[type] = jewels;
+    }
+    return { style: payload.style, set: nextSet, decorations: nextDecorations };
+  }
+
+  function updateSetShareStatus(message, isError = false) {
+    const status = $('#setShareStatus');
+    status.textContent = message;
+    status.classList.toggle('error', isError);
+  }
+
   function renderSetBuilder() {
     const root = $('#setBuilder');
     root.innerHTML = PIECE_TYPES.map((type) => {
@@ -1208,5 +1264,39 @@
     appState.decorations = {};
     renderSetBuilder();
   }));
+  $('#shareSet').addEventListener('click', () => {
+    $('#setShareCode').value = makeSetShareCode();
+    updateSetShareStatus('Código actualizado con las piezas y joyas del simulador.');
+    $('#setShareDialog').showModal();
+  });
+  $('#copySetCode').addEventListener('click', async () => {
+    const field = $('#setShareCode');
+    try {
+      await navigator.clipboard.writeText(field.value);
+      updateSetShareStatus('Código copiado. Ya puedes compartirlo.');
+    } catch {
+      field.focus();
+      field.select();
+      let copied = false;
+      try { copied = document.execCommand('copy'); } catch { /* se deja el código seleccionado para copiarlo a mano */ }
+      if (copied) updateSetShareStatus('Código copiado. Ya puedes compartirlo.');
+      else updateSetShareStatus('No pude copiarlo automáticamente. El código quedó seleccionado para que uses Ctrl+C.', true);
+    }
+  });
+  $('#applySetCode').addEventListener('click', () => {
+    try {
+      const imported = parseSetShareCode($('#setShareCode').value);
+      appState.armorStyle = imported.style;
+      appState.set = imported.set;
+      appState.decorations = imported.decorations;
+      $$('.style-button').forEach((button) => button.classList.toggle('active', button.dataset.style === imported.style));
+      renderSetBuilder();
+      $('#setShareDialog').close();
+      notify('Set cargado en el simulador. No se modificó la partida.');
+    } catch (error) {
+      updateSetShareStatus(error?.message || 'No se pudo leer este código.', true);
+    }
+  });
+  $('#closeSetShare').addEventListener('click', () => $('#setShareDialog').close());
   $('#clearSet').addEventListener('click', () => { appState.set = {}; appState.decorations = {}; renderSetBuilder(); });
 })();

@@ -143,7 +143,7 @@
           <div class="section-intro"><div><div class="eyebrow">PLANIFICADOR DE EQUIPO</div><h2>Arma un set y revisa sus habilidades</h2></div><p>Este simulador es independiente del save. Elige cinco piezas para estimar defensa, resistencias, ranuras y habilidades activadas.</p></div>
           <div class="set-controls panel">
             <div class="style-switch"><span>Tipo de armadura</span><button class="style-button active" data-style="blade">Espadachín</button><button class="style-button" data-style="gunner">Artillero</button></div>
-            <button class="button button-secondary" id="clearSet">Limpiar set</button>
+            <div class="set-actions"><button class="button button-secondary" id="shareSet" type="button">Compartir código</button><button class="button button-secondary" id="clearSet" type="button">Limpiar set</button></div>
           </div>
           <div class="set-builder" id="setBuilder"></div>
           <div class="set-results" id="setResults"></div>
@@ -151,7 +151,7 @@
         </section>
       </div>
 
-      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.3.0-preview.4</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
+      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.3.0-preview.5</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
     </main>
   </div>
   <dialog id="saveCandidateDialog" class="save-candidate-dialog">
@@ -167,6 +167,19 @@
         <button class="button button-primary" value="choose">Abrir esta partida</button>
       </div>
     </form>
+  </dialog>
+  <dialog id="setShareDialog" class="set-share-dialog">
+    <div class="eyebrow">COMPARTIR EQUIPO</div>
+    <h2>Código del set</h2>
+    <p>El código contiene solo las piezas y joyas del simulador. No incluye información de la partida ni modifica el save.</p>
+    <label for="setShareCode">Copia este código o pega uno para cargar un set</label>
+    <textarea id="setShareCode" spellcheck="false" rows="5" aria-describedby="setShareStatus"></textarea>
+    <div id="setShareStatus" class="set-share-status" role="status" aria-live="polite">Formato versionado; solo se aceptan piezas y joyas compatibles con este catálogo.</div>
+    <div class="candidate-actions">
+      <button class="button button-secondary" type="button" id="copySetCode">Copiar código</button>
+      <button class="button button-primary" type="button" id="applySetCode">Cargar set</button>
+      <button class="button button-secondary" type="button" id="closeSetShare">Cerrar</button>
+    </div>
   </dialog>
 </body>
 </html>
