@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <title>MH3 Progress Analyzer</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="data.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">MH<span>3</span></div>
+        <div><strong>HUNTER DESK</strong><small>Progress Analyzer</small></div>
+      </div>
+
+      <div class="save-box">
+        <div class="eyebrow">PARTIDA LOCAL</div>
+        <div id="saveStatus" class="save-status"><span class="status-dot"></span>Sin partida cargada</div>
+        <label class="button button-primary file-button" for="saveFiles">Abrir archivos data00–05</label>
+        <input id="saveFiles" type="file" multiple>
+        <button class="button button-secondary folder-button" type="button" data-open-save-folder>Buscar saves en carpeta</button>
+        <p class="privacy-note">Solo lectura · los datos no salen de este equipo</p>
+      </div>
+
+      <nav class="nav-list" aria-label="Secciones">
+        <button class="nav-item active" data-view="dashboard"><span class="nav-icon">⌂</span>Resumen</button>
+        <button class="nav-item" data-view="online"><span class="nav-icon">◎</span>Loc Lac online</button>
+        <button class="nav-item" data-view="village"><span class="nav-icon">⌂</span>Aldea de Moga</button>
+        <button class="nav-item" data-view="hunts"><span class="nav-icon">◈</span>Monstruos</button>
+        <button class="nav-item" data-view="materials"><span class="nav-icon">▦</span>Materiales</button>
+        <button class="nav-item" data-view="save"><span class="nav-icon">⌕</span>Inspector de save</button>
+        <button class="nav-item" data-view="sets"><span class="nav-icon">⚒</span>Armar set</button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <span class="readonly-badge"><i></i>ANÁLISIS DE SOLO LECTURA</span>
+        <small>Monster Hunter Tri · versión europea</small>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <div id="analysisError" class="analysis-error hidden" role="alert"></div>
+      <header class="topbar">
+        <div>
+          <div class="eyebrow" id="crumb">PANEL DEL CAZADOR</div>
+          <h1 id="pageTitle">Tu progreso, de un vistazo</h1>
+        </div>
+        <div class="hunter-picker">
+          <label for="profileSelect">CAZADOR</label>
+          <select id="profileSelect" disabled><option>Carga tu partida</option></select>
+        </div>
+      </header>
+
+      <div id="emptyState" class="empty-state">
+        <div class="empty-emblem">✦</div>
+        <div class="eyebrow">EMPEZÁ POR TU SAVE</div>
+        <h2>Vamos a encontrar tu próximo objetivo.</h2>
+        <p>Elige la carpeta <code>saves</code> del juego o directamente <code>nocopy</code>. La app busca los archivos <code>data00</code> a <code>data05</code> dentro de esa ruta y valida su checksum.</p>
+        <div class="empty-actions">
+          <label class="button button-primary file-button" for="saveFiles">Seleccionar archivos</label>
+          <button class="button button-secondary folder-button" type="button" data-open-save-folder>Buscar carpeta de saves</button>
+        </div>
+        <div class="empty-foot"><span class="checkmark">✓</span> La partida se procesa localmente y nunca se modifica.</div>
+      </div>
+
+      <div id="appContent" class="content hidden">
+        <section class="view active" id="view-dashboard">
+          <div id="heroObjective" class="hero-objective"></div>
+          <div id="summaryStats" class="stat-grid"></div>
+          <div class="dashboard-grid">
+            <article class="panel" id="rankPanel"></article>
+            <article class="panel" id="villagePanel"></article>
+          </div>
+          <article class="panel recent-panel" id="recentPanel"></article>
+        </section>
+
+        <section class="view" id="view-online">
+          <div class="section-intro"><div><div class="eyebrow">RANGO DE CAZADOR</div><h2>Qué te falta para avanzar en Loc Lac</h2></div><p>Las urgentes importantes dependen de dos cosas: las misiones clave de cada rango y los puntos de RC.</p></div>
+          <div id="onlineNext"></div>
+          <div class="milestone-grid" id="onlineMilestones"></div>
+        </section>
+
+        <section class="view" id="view-village">
+          <div class="section-intro"><div><div class="eyebrow">PROGRESO DE HISTORIA</div><h2>La aldea de Moga</h2></div><p>Completa las misiones clave y las urgentes para abrir el siguiente grupo. El estado de solicitudes de aldeanos se verifica manualmente.</p></div>
+          <div id="villageNext"></div>
+          <div id="villageManual"></div>
+          <div class="quest-groups" id="villageQuestGroups"></div>
+        </section>
+
+        <section class="view" id="view-hunts">
+          <div class="section-intro"><div><div class="eyebrow">OBJETIVOS COMPLETADOS</div><h2>Monstruos en misiones terminadas</h2></div><p>Esto refleja objetivos de misiones marcadas como completadas. No es un contador total de capturas o cacerías.</p></div>
+          <div class="toolbar"><input id="monsterSearch" type="search" placeholder="Buscar monstruo…"><span id="monsterCount" class="muted"></span></div>
+          <div class="monster-grid" id="monsterGrid"></div>
+        </section>
+
+        <section class="view" id="view-materials">
+          <div class="section-intro"><div><div class="eyebrow">BAÚL DE OBJETOS</div><h2>Lo que tienes guardado</h2></div><p>Lectura de los espacios del baúl. No incluye objetos que estén solamente en la bolsa del cazador.</p></div>
+          <div class="request-panel panel" id="requestPanel"></div>
+          <div class="toolbar"><input id="itemSearch" type="search" placeholder="Buscar material u objeto…"><span id="itemCount" class="muted"></span></div>
+          <div class="table-wrap"><table><thead><tr><th>Objeto</th><th class="numeric">Cantidad en baúl</th></tr></thead><tbody id="itemRows"></tbody></table></div>
+        </section>
+
+        <section class="view" id="view-save">
+          <div id="saveInspector"></div>
+        </section>
+
+        <section class="view" id="view-sets">
+          <div class="section-intro"><div><div class="eyebrow">PLANIFICADOR DE EQUIPO</div><h2>Arma un set y revisa sus habilidades</h2></div><p>Este simulador es independiente del save. Elige cinco piezas para estimar defensa, resistencias, ranuras y habilidades activadas.</p></div>
+          <div class="set-controls panel">
+            <div class="style-switch"><span>Tipo de armadura</span><button class="style-button active" data-style="blade">Espadachín</button><button class="style-button" data-style="gunner">Artillero</button></div>
+            <button class="button button-secondary" id="clearSet">Limpiar set</button>
+          </div>
+          <div class="set-builder" id="setBuilder"></div>
+          <div class="set-results" id="setResults"></div>
+          <p class="small-note">La vista usa las estadísticas base de las piezas. No incluye mejoras, amuletos ni joyas; las recetas de armadura tampoco están disponibles en la fuente de datos incluida.</p>
+        </section>
+      </div>
+
+      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.2.0</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
+    </main>
+  </div>
+</body>
+</html>

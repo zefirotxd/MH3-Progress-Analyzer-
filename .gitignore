@@ -1,0 +1,15 @@
+node_modules/
+dist/
+release/
+*.log
+*.tmp
+.env
+.env.*
+src/user-saves/
+*.sav
+data00
+data01
+data02
+data03
+data04
+data05
