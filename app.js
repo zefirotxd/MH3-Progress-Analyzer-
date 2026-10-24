@@ -50,6 +50,7 @@
   const PIECE_TYPES = ['head', 'chest', 'arms', 'waist', 'legs'];
   const WEAPON_CLASS_ORDER = ['Great Sword', 'Longsword', 'Sword and Shield', 'Hammer', 'Lance', 'Switch Axe'];
   const WEAPON_CLASSES = WEAPON_CLASS_ORDER.filter((type) => (DATA.weapons || []).some((weapon) => weapon.type === type));
+  const WEAPON_SHOPPING_STORAGE_KEY = 'mh3-progress-analyzer.weapon-shopping.v1';
   const WEAPON_CLASS_NAMES = {
     'Great Sword': 'Espada grande', Longsword: 'Espada larga', 'Sword and Shield': 'Espada y escudo',
     Hammer: 'Martillo', Lance: 'Lanza', 'Switch Axe': 'Hacha espada',
@@ -111,13 +112,72 @@
     { title: 'One Chance · misiones extra de 5★', items: [['Flabby Hide', 2], ['Rath Talon', 2], ['Machalite Ore', 8]], note: 'Solicitud de Junior. El guardado no expone su estado de entrega; confirma con el NPC si ya la completaste.' },
   ];
 
-  const appState = { profiles: [], files: [], selected: 0, view: 'dashboard', monsterSearch: '', itemSearch: '', armorStyle: 'blade', set: {}, decorations: {}, weaponClass: WEAPON_CLASSES[0] || '', weaponTarget: '', weaponStart: '', weaponRoute: 0 };
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
   const formatNumber = (value) => new Intl.NumberFormat('es-UY').format(value ?? 0);
   const hex = (id) => `0x${Number(id).toString(16).toUpperCase().padStart(4, '0')}`;
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+  function loadWeaponShoppingList() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(WEAPON_SHOPPING_STORAGE_KEY) || '[]');
+      if (!Array.isArray(stored)) return [];
+      const goals = [];
+      for (const entry of stored.slice(0, 50)) {
+        if (!entry || typeof entry !== 'object') continue;
+        if (!WEAPON_CLASSES.includes(entry?.type)) continue;
+        const targetId = Number(entry.targetId);
+        const startId = entry.startId == null ? null : Number(entry.startId);
+        const routeIds = Array.isArray(entry.weaponIds) ? entry.weaponIds.slice(0, 100).map(Number) : [];
+        if (!Number.isSafeInteger(targetId) || routeIds.length === 0 || routeIds.some((id) => !Number.isSafeInteger(id))) continue;
+        if (startId !== null && !Number.isSafeInteger(startId)) continue;
+        const weapons = DATA.weapons.filter((weapon) => weapon.type === entry.type);
+        const route = collectForgePaths(weapons, targetId, startId === null ? '' : String(startId))
+          .find((path) => path.weapons.length === routeIds.length && path.weapons.every((weapon, index) => weapon.id === routeIds[index]));
+        if (!route) continue;
+        const requirements = collectForgeRequirements(route);
+        if (!requirements.size) continue;
+        const goal = {
+          key: forgeGoalKey(entry.type, targetId, startId, routeIds),
+          type: entry.type,
+          targetId,
+          startId,
+          weaponIds: routeIds,
+          name: route.weapons.at(-1).name,
+          route: route.weapons.map((weapon) => weapon.name).join(' → '),
+          copies: clamp(Math.floor(Number(entry.copies) || 1), 1, 99),
+          requirements: [...requirements.entries()].map(([id, required]) => ({ id, required })),
+        };
+        const existing = goals.find((candidate) => candidate.key === goal.key);
+        if (existing) existing.copies = clamp(existing.copies + goal.copies, 1, 99);
+        else goals.push(goal);
+      }
+      return goals;
+    } catch (error) {
+      console.warn('No se pudo recuperar la lista local de materiales', error);
+      return [];
+    }
+  }
+
+  function persistWeaponShoppingList() {
+    try {
+      localStorage.setItem(WEAPON_SHOPPING_STORAGE_KEY, JSON.stringify(appState.weaponShoppingList.map((goal) => ({
+        type: goal.type,
+        targetId: goal.targetId,
+        startId: goal.startId,
+        weaponIds: goal.weaponIds,
+        copies: goal.copies,
+      }))));
+    } catch (error) {
+      console.warn('No se pudo guardar la lista local de materiales', error);
+    }
+  }
+
+  function forgeGoalKey(type, targetId, startId, weaponIds) {
+    return `${type}:${targetId}:${startId ?? 'new'}:${weaponIds.join('>')}`;
+  }
+  const appState = { profiles: [], files: [], selected: 0, view: 'dashboard', monsterSearch: '', itemSearch: '', armorStyle: 'blade', set: {}, decorations: {}, weaponClass: WEAPON_CLASSES[0] || '', weaponTarget: '', weaponStart: '', weaponRoute: 0, weaponShoppingList: loadWeaponShoppingList() };
   const rankThreshold = (rank) => {
     const target = Math.max(0, Math.floor(rank));
     if (target === 0) return 0;
@@ -552,6 +612,7 @@
       return `<div class="request-item ${count >= required ? 'enough' : ''}"><strong>${escapeHtml(item?.name || name)}</strong><span>${formatNumber(count)} / ${required} ${count >= required ? '· alcanza' : '· faltan ' + formatNumber(required - count)}</span></div>`;
     }).join('')}</div></div>`).join('<div class="request-separator"></div>');
     renderWeaponPlanner(profile);
+    renderWeaponShoppingList(profile);
   }
 
   function weaponPathOptions(weapons, targetId) {
@@ -594,13 +655,18 @@
     return visit(byId.get(Number(targetId)), new Set());
   }
 
-  function scoreForgePath(path, profile) {
+  function collectForgeRequirements(path) {
     const requirements = new Map();
     for (const step of path.steps) {
       for (const material of step.materials || []) {
         requirements.set(material.itemId, (requirements.get(material.itemId) || 0) + material.amount);
       }
     }
+    return requirements;
+  }
+
+  function scoreForgePath(path, profile) {
+    const requirements = collectForgeRequirements(path);
     const rows = [...requirements.entries()].map(([id, required]) => ({
       id,
       required,
@@ -658,7 +724,58 @@
     const weaponDetail = target ? `Ataque ${formatNumber(target.attack)} · ${target.secondaryDamageType ? `${escapeHtml(target.secondaryDamageType)} ${formatNumber(target.secondaryAttack)}` : 'sin elemento'} · afinidad ${target.affinity > 0 ? '+' : ''}${target.affinity}% · ${target.slots} ranura${target.slots === 1 ? '' : 's'}` : '';
     const pathMarkup = path.weapons.map((weapon, index) => `<span class="weapon-path-step">${escapeHtml(weapon.name)}</span>${index < path.weapons.length - 1 ? '<span class="weapon-path-arrow">→</span>' : ''}`).join('');
     const materials = path.rows.length ? `<div class="table-wrap weapon-material-table"><table><thead><tr><th>Material</th><th class="numeric">Necesitas</th><th class="numeric">En baúl</th><th class="numeric">Faltan</th></tr></thead><tbody>${path.rows.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td class="numeric">${formatNumber(row.required)}</td><td class="numeric">${formatNumber(row.owned)}</td><td class="numeric ${row.missing ? 'number-negative' : 'number-positive'}">${formatNumber(row.missing)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="weapon-empty">No se requieren materiales para el tramo seleccionado; el arma objetivo ya está marcada como punto de partida.</div>';
-    result.innerHTML = `<div class="weapon-plan-heading"><div><strong>${escapeHtml(target?.name || 'Arma seleccionada')}</strong><span>${weaponDetail}</span></div><span class="tag ${path.missing === 0 ? 'good' : 'warn'}">${path.missing === 0 ? 'Alcanza el baúl' : `Faltan ${formatNumber(path.missing)} unidades`}</span></div><div class="weapon-path">${pathMarkup}</div>${materials}`;
+    result.innerHTML = `<div class="weapon-plan-heading"><div><strong>${escapeHtml(target?.name || 'Arma seleccionada')}</strong><span>${weaponDetail}</span></div><span class="tag ${path.missing === 0 ? 'good' : 'warn'}">${path.missing === 0 ? 'Alcanza el baúl' : `Faltan ${formatNumber(path.missing)} unidades`}</span></div><div class="weapon-path">${pathMarkup}</div>${materials}${path.rows.length ? '<div class="weapon-plan-actions"><button class="button button-secondary" id="addWeaponGoal" type="button">Sumar a lista de materiales</button><span>La lista combina esta ruta con tus otros objetivos.</span></div>' : ''}`;
+    $('#addWeaponGoal')?.addEventListener('click', () => {
+      const targetId = Number(appState.weaponTarget);
+      const startId = appState.weaponStart === '' ? null : Number(appState.weaponStart);
+      const weaponIds = path.weapons.map((weapon) => weapon.id);
+      const key = forgeGoalKey(appState.weaponClass, targetId, startId, weaponIds);
+      const existing = appState.weaponShoppingList.find((goal) => goal.key === key);
+      if (existing) {
+        if (existing.copies >= 99) {
+          notify('La lista admite hasta 99 copias por objetivo.');
+          return;
+        }
+        existing.copies += 1;
+      } else {
+        appState.weaponShoppingList.push({
+          key,
+          type: appState.weaponClass,
+          targetId,
+          startId,
+          weaponIds,
+          name: target?.name || 'Arma seleccionada',
+          route: path.weapons.map((weapon) => weapon.name).join(' → '),
+          copies: 1,
+          requirements: path.rows.map(({ id, required }) => ({ id, required })),
+        });
+      }
+      persistWeaponShoppingList();
+      renderWeaponShoppingList(currentProfile());
+      notify(`Objetivo agregado a la lista: ${target?.name || 'arma seleccionada'}.`);
+    });
+  }
+
+  function renderWeaponShoppingList(profile) {
+    const root = $('#weaponShoppingList');
+    const goals = appState.weaponShoppingList;
+    if (!goals.length) {
+      root.innerHTML = '<section class="weapon-shopping panel"><div class="panel-heading"><div><h3>Lista de materiales para tus armas</h3><div class="panel-subtitle">Agrega rutas desde el planificador para combinar objetivos y calcular qué te falta.</div></div></div><div class="weapon-shopping-empty">Tu lista está vacía. Elige un arma y una ruta arriba, y pulsa <strong>Sumar a lista de materiales</strong>.</div><p class="small-note">La lista se guarda en este equipo, separada de la partida. Solo se incluyen recetas de armas del catálogo; los costos de forja de armaduras no están disponibles.</p></section>';
+      return;
+    }
+    const requirements = new Map();
+    for (const goal of goals) {
+      for (const requirement of goal.requirements) {
+        requirements.set(requirement.id, (requirements.get(requirement.id) || 0) + requirement.required * goal.copies);
+      }
+    }
+    const rows = [...requirements.entries()].map(([id, required]) => {
+      const owned = profile.itemCounts.get(id) || 0;
+      return { id, name: ITEM_NAMES.get(id) || `Objeto #${id}`, required, owned, missing: Math.max(0, required - owned) };
+    }).sort((a, b) => a.name.localeCompare(b.name));
+    const missingUnits = rows.reduce((sum, row) => sum + row.missing, 0);
+    const goalMarkup = goals.map((goal, index) => `<div class="weapon-goal-row"><div><strong>${escapeHtml(goal.name)} <span>×${formatNumber(goal.copies)}</span></strong><small>${escapeHtml(goal.route)}</small></div><div class="weapon-goal-controls"><button type="button" class="goal-quantity" data-change-weapon-goal="${index}" data-delta="-1" aria-label="Quitar una copia de ${escapeHtml(goal.name)}">−</button><button type="button" class="goal-quantity" data-change-weapon-goal="${index}" data-delta="1" aria-label="Agregar una copia de ${escapeHtml(goal.name)}">+</button><button type="button" class="goal-remove" data-remove-weapon-goal="${index}" aria-label="Quitar ${escapeHtml(goal.name)} de la lista">Quitar</button></div></div>`).join('');
+    root.innerHTML = `<section class="weapon-shopping panel"><div class="panel-heading"><div><h3>Lista de materiales para tus armas</h3><div class="panel-subtitle">${formatNumber(goals.reduce((sum, goal) => sum + goal.copies, 0))} copias · ${formatNumber(rows.length)} materiales distintos · cantidades del baúl descontadas una sola vez</div></div><button class="button button-secondary" type="button" data-clear-weapon-goals>Vaciar lista</button></div><div class="weapon-goals">${goalMarkup}</div><div class="weapon-shopping-summary"><span class="tag ${missingUnits === 0 ? 'good' : 'warn'}" role="status" aria-live="polite">${missingUnits === 0 ? 'Tienes todos los materiales' : `Te faltan ${formatNumber(missingUnits)} unidades`}</span><span>El cálculo usa el baúl del cazador seleccionado; no cuenta objetos de la bolsa.</span></div><div class="table-wrap weapon-material-table"><table><thead><tr><th>Material</th><th class="numeric">Total para objetivos</th><th class="numeric">En baúl</th><th class="numeric">Faltan</th></tr></thead><tbody>${rows.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td class="numeric">${formatNumber(row.required)}</td><td class="numeric">${formatNumber(row.owned)}</td><td class="numeric ${row.missing ? 'number-negative' : 'number-positive'}">${formatNumber(row.missing)}</td></tr>`).join('')}</tbody></table></div><p class="small-note">La lista se guarda en este equipo, separada de la partida. Solo se incluyen recetas de armas del catálogo; los costos de forja de armaduras no están disponibles.</p></section>`;
   }
 
   function renderSaveInspector() {
@@ -901,6 +1018,31 @@
   document.addEventListener('click', (event) => {
     const go = event.target.closest('[data-goto]');
     if (go) showView(go.dataset.goto);
+    const changeGoal = event.target.closest('[data-change-weapon-goal]');
+    const removeGoal = event.target.closest('[data-remove-weapon-goal]');
+    const profile = currentProfile();
+    if (!profile) return;
+    if (changeGoal) {
+      const goal = appState.weaponShoppingList[Number(changeGoal.dataset.changeWeaponGoal)];
+      if (!goal) return;
+      const nextCopies = goal.copies + Number(changeGoal.dataset.delta);
+      if (nextCopies > 99) {
+        notify('La lista admite hasta 99 copias por objetivo.');
+        return;
+      }
+      goal.copies = nextCopies;
+      if (goal.copies <= 0) appState.weaponShoppingList.splice(Number(changeGoal.dataset.changeWeaponGoal), 1);
+      persistWeaponShoppingList();
+      renderWeaponShoppingList(profile);
+    } else if (removeGoal) {
+      appState.weaponShoppingList.splice(Number(removeGoal.dataset.removeWeaponGoal), 1);
+      persistWeaponShoppingList();
+      renderWeaponShoppingList(profile);
+    } else if (event.target.closest('[data-clear-weapon-goals]')) {
+      appState.weaponShoppingList = [];
+      persistWeaponShoppingList();
+      renderWeaponShoppingList(profile);
+    }
   });
   $('#monsterSearch').addEventListener('input', (event) => { appState.monsterSearch = event.target.value; const profile = currentProfile(); if (profile) renderHunts(profile); });
   $('#itemSearch').addEventListener('input', (event) => { appState.itemSearch = event.target.value; const profile = currentProfile(); if (profile) renderMaterials(profile); });

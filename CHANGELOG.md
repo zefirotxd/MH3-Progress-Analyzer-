@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0-preview.3 · compilación local
+
+- Add a locally stored weapon shopping list that combines material requirements across multiple forge routes and repeated copies.
+- Subtract the selected hunter's item-box stock once per material and recalculate when the active hunter changes.
+- Keep weapon targets adjustable or removable, recalculate against the selected hunter, and state clearly that armor forging costs are unavailable in the checked-in catalog.
+
 ## 0.3.0-preview.2 · compilación local
 
 - Add weapon crafting and upgrade route planning for all six MH3 blademaster classes, including material shortfalls against the selected hunter's item box.
