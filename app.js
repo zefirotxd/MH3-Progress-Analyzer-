@@ -86,6 +86,13 @@
   const QUEST_GOAL_LABELS = {
     gathering: 'Recolección', slay: 'Eliminar', hunt: 'Cazar', capture: 'Capturar', repel: 'Repeler', other: 'Objetivo especial',
   };
+  const SUBQUEST_GOAL_LABELS = {
+    anthill: 'Destruir hormigueros', break: 'Romper una parte', eggs: 'Entregar huevos',
+    fish: 'Pescar al objetivo', gathering: 'Recolección', hunt: 'Cazar',
+    light: 'Objetivo especial (light)', pitfall: 'Usar trampa escollo',
+    sever: 'Cortar la cola', slay: 'Eliminar', sonic: 'Afectar con bomba sónica',
+    stun: 'Aturdir',
+  };
   const QUEST_TYPE_LABELS = {
     gather: 'Recolección', hunt: 'Cacería', capture: 'Captura', escort: 'Escolta', slay: 'Eliminación',
     multihunt: 'Cacería múltiple', harvest: 'Cosecha', repel: 'Repeler',
@@ -718,7 +725,10 @@
 
   function questTargetSummary(quest) {
     const isGathering = quest.goal === 'gathering' || ['gather', 'harvest'].includes(quest.type);
-    return Object.entries(quest.targets || {}).map(([rawId, rawAmount]) => {
+    const targetEntries = Array.isArray(quest.targets)
+      ? quest.targets.map((id) => [String(id), 1])
+      : Object.entries(quest.targets || {});
+    return targetEntries.map(([rawId, rawAmount]) => {
       const id = Number(rawId);
       const name = isGathering
         ? ITEM_NAMES.get(id) || MONSTER_NAMES.get(id)
@@ -786,9 +796,28 @@
         quest.reward != null ? `Pago: ${formatNumber(quest.reward)} z` : '',
         quest.hrp != null ? `${formatNumber(quest.hrp)} HRP` : '',
       ].filter(Boolean).join(' · ');
-      const rewards = [...(quest.secondaryRewards || [])].sort((a, b) => b.chance - a.chance).slice(0, 4);
-      const rewardMarkup = rewards.length ? `<div class="quest-reward-detail"><small>Tabla secundaria</small><strong>${rewards.map((reward) => `${escapeHtml(ITEM_NAMES.get(reward.itemId) || `Objeto ${hex(reward.itemId)}`)}${reward.count > 1 ? ` ×${formatNumber(reward.count)}` : ''} · ${formatNumber(reward.chance)}%`).join(' · ')}${quest.secondaryRewards.length > rewards.length ? ` · +${quest.secondaryRewards.length - rewards.length} resultados` : ''}</strong></div>` : '';
-      return `<article class="quest-catalog-card"><div class="quest-catalog-top"><div><h3>${escapeHtml(quest.name)}</h3><div class="quest-catalog-tags"><span>${escapeHtml(QUEST_REGION_LABELS[quest.region] || quest.region)}</span><span>Rango ${escapeHtml(QUEST_RANK_LABELS[quest.rank] || quest.rank)}</span>${progressionTags}</div></div><span class="quest-save-status ${status.className}">${status.label}</span></div><div class="quest-catalog-details"><div><small>Tipo</small><strong>${escapeHtml(QUEST_TYPE_LABELS[quest.type] || quest.type || 'Sin tipo')}</strong></div><div><small>Objetivo registrado</small><strong>${escapeHtml(QUEST_GOAL_LABELS[quest.goal] || quest.goal || 'Sin objetivo')}</strong></div><div class="quest-target-detail"><small>Objetivos</small><strong>${escapeHtml(target)}</strong></div>${economy ? `<div class="quest-economy-detail"><small>Datos de misión</small><strong>${escapeHtml(economy)}</strong></div>` : ''}${rewardMarkup}</div><div class="quest-catalog-id">ID ${hex(quest.id)}${QUEST_INDEX.has(quest.id) ? ' · bandera compatible con el save' : ' · sin bandera compatible conocida'}</div></article>`;
+      const rewards = [...(quest.secondaryRewards || [])].sort((a, b) => b.chance - a.chance || (a.itemId || 0) - (b.itemId || 0));
+      const rewardMarkup = rewards.length
+        ? '<div class="quest-reward-detail"><small>Tabla secundaria · ' + formatNumber(rewards.length) + ' resultados</small><div class="quest-reward-items">'
+          + rewards.map((reward) => {
+            const itemName = ITEM_NAMES.get(reward.itemId) || 'Objeto ' + hex(reward.itemId);
+            return '<button type="button" class="quest-reward-item" data-material-source-pick="' + Number(reward.itemId) + '" title="Buscar fuentes de ' + escapeHtml(itemName) + '"><strong>' + escapeHtml(itemName) + '</strong><span>×' + formatNumber(reward.count || 1) + ' · ' + formatNumber(reward.chance) + '%</span></button>';
+          }).join('')
+          + '</div></div>'
+        : '';
+      const subquestMarkup = (quest.subquests || []).length
+        ? '<div class="quest-subquests-detail"><small>Objetivos secundarios y recompensas</small>' + quest.subquests.map((subquest, index) => {
+          const details = [
+            SUBQUEST_GOAL_LABELS[subquest.goal] || 'Objetivo especial',
+            subquest.targets != null ? questTargetSummary({ goal: subquest.goal, targets: subquest.targets }) : '',
+            subquest.count != null ? 'Cantidad: ' + formatNumber(subquest.count) : '',
+            subquest.reward != null ? 'Pago ' + formatNumber(subquest.reward) + ' z' : '',
+            subquest.hrp != null ? formatNumber(subquest.hrp) + ' HRP' : '',
+          ].filter(Boolean).join(' · ');
+          return '<div class="quest-subquest-row"><strong>Objetivo secundario ' + formatNumber(index + 1) + '</strong><span>' + escapeHtml(details) + '</span></div>';
+        }).join('') + '</div>'
+        : '';
+      return `<article class="quest-catalog-card"><div class="quest-catalog-top"><div><h3>${escapeHtml(quest.name)}</h3><div class="quest-catalog-tags"><span>${escapeHtml(QUEST_REGION_LABELS[quest.region] || quest.region)}</span><span>Rango ${escapeHtml(QUEST_RANK_LABELS[quest.rank] || quest.rank)}</span>${progressionTags}</div></div><span class="quest-save-status ${status.className}">${status.label}</span></div><div class="quest-catalog-details"><div><small>Tipo</small><strong>${escapeHtml(QUEST_TYPE_LABELS[quest.type] || quest.type || 'Sin tipo')}</strong></div><div><small>Objetivo registrado</small><strong>${escapeHtml(QUEST_GOAL_LABELS[quest.goal] || quest.goal || 'Sin objetivo')}</strong></div><div class="quest-target-detail"><small>Objetivos</small><strong>${escapeHtml(target)}</strong></div>${economy ? `<div class="quest-economy-detail"><small>Datos de misión</small><strong>${escapeHtml(economy)}</strong></div>` : ''}${rewardMarkup}${subquestMarkup}</div><div class="quest-catalog-id">ID ${hex(quest.id)}${QUEST_INDEX.has(quest.id) ? ' · bandera compatible con el save' : ' · sin bandera compatible conocida'}</div></article>`;
     }).join('') : '<div class="quest-catalog-empty">No hay misiones con estos filtros. Prueba otra zona, rango u objetivo.</div>';
   }
 
@@ -819,6 +848,40 @@
     const rank = rankKey === 'low' ? 'Low' : 'High';
     return (results || []).filter((result) => result.itemId === appState.materialSourceItemId
       && (appState.materialSourceRank === 'all' || rank === appState.materialSourceRank));
+  }
+
+  function weaponRecipeSourcesForItem(itemId) {
+    const weapons = DATA.weapons || [];
+    const weaponById = new Map(weapons.map((weapon) => [weapon.id, weapon]));
+    const sources = [];
+    for (const weapon of weapons) {
+      for (const material of weapon.create || []) {
+        if (material.itemId === itemId) sources.push({ weapon, action: 'Forja directa', amount: material.amount });
+      }
+      const upgrade = weapon.upgradesFrom;
+      if (!upgrade) continue;
+      const origins = (upgrade.weaponId || []).map((id) => weaponById.get(id)?.name).filter(Boolean);
+      for (const material of upgrade.materials || []) {
+        if (material.itemId === itemId) sources.push({ weapon, action: 'Mejora', origin: origins.join(' / '), amount: material.amount });
+      }
+    }
+    return sources.sort((a, b) => a.weapon.type.localeCompare(b.weapon.type)
+      || a.weapon.name.localeCompare(b.weapon.name) || a.action.localeCompare(b.action));
+  }
+
+  function renderWeaponRecipeSources(itemId) {
+    const sources = weaponRecipeSourcesForItem(itemId);
+    const rows = sources.length ? sources.map((source) =>
+      '<article class="weapon-recipe-source-row"><div><strong>'
+        + escapeHtml(WEAPON_CLASS_NAMES[source.weapon.type] || source.weapon.type) + ' · ' + escapeHtml(source.weapon.name)
+        + '</strong><small>' + escapeHtml(source.action)
+        + (source.origin ? ' · desde ' + escapeHtml(source.origin) : '')
+        + '</small></div><b>×' + formatNumber(source.amount) + '</b></article>'
+    ).join('')
+      : '<div class="source-empty">Este material no aparece en las recetas de armas incluidas.</div>';
+    return '<div class="source-result-section"><h5>Se usa para forjar o mejorar armas · '
+      + formatNumber(sources.length) + ' recetas</h5><p>Recetas registradas en el catálogo local. No incluye armaduras.</p>'
+      + '<div class="source-quest-list">' + rows + '</div></div>';
   }
 
   function collectMaterialSources(profile) {
@@ -868,21 +931,22 @@
         }
       }
     }
-    const questMarkup = questSources.length ? `<div class="source-quest-list">${questSources.sort((a, b) => (a.quest.rank === b.quest.rank ? a.quest.name.localeCompare(b.quest.name) : a.quest.rank === 'Low' ? -1 : 1)).slice(0, 60).map(({ quest, reward, subquest, subquestIndex }) => {
+    const questMarkup = questSources.length ? `<div class="source-quest-list">${questSources.sort((a, b) => (a.quest.rank === b.quest.rank ? a.quest.name.localeCompare(b.quest.name) : a.quest.rank === 'Low' ? -1 : 1)).map(({ quest, reward, subquest, subquestIndex }) => {
       const status = questSaveStatus(profile, quest);
-      return `<article class="source-quest-row"><div><strong>${escapeHtml(quest.name)}${subquest ? ` · submisión ${subquestIndex}` : ''}</strong><small>${escapeHtml(QUEST_REGION_LABELS[quest.region] || quest.region)} · ${escapeHtml(QUEST_RANK_LABELS[quest.rank] || quest.rank)}${quest.location ? ` · ${escapeHtml(quest.location)}` : ''} · ${escapeHtml(status.label)}</small></div><span>${formatNumber(reward.chance)}% · ×${formatNumber(reward.count)}</span></article>`;
-    }).join('')}</div>${questSources.length > 60 ? `<p class="small-note">Se muestran 60 de ${formatNumber(questSources.length)} misiones.</p>` : ''}` : '<div class="source-empty">No hay recompensas secundarias de misión para este material en las tablas incluidas.</div>';
+      return `<article class="source-quest-row"><div><strong>${escapeHtml(quest.name)}${subquest ? ` · objetivo secundario ${subquestIndex}` : ''}</strong><small>${escapeHtml(QUEST_REGION_LABELS[quest.region] || quest.region)} · ${escapeHtml(QUEST_RANK_LABELS[quest.rank] || quest.rank)}${quest.location ? ` · ${escapeHtml(quest.location)}` : ''} · ${escapeHtml(status.label)}</small></div><span>${formatNumber(reward.chance)}% · ×${formatNumber(reward.count)}</span></article>`;
+    }).join('')}</div>` : '<div class="source-empty">No hay recompensas secundarias de misión para este material en las tablas incluidas.</div>';
 
     const objectiveQuests = DATA.quests.filter((quest) => ['hunt', 'capture', 'slay'].includes(quest.goal)
       && Object.keys(quest.targets || {}).some((id) => monsterIds.has(Number(id)))
       && (appState.materialSourceRank === 'all' || quest.rank === appState.materialSourceRank));
-    const objectiveMarkup = objectiveQuests.length ? `<div class="source-quest-list">${objectiveQuests.sort((a, b) => (a.rank === b.rank ? a.name.localeCompare(b.name) : a.rank === 'Low' ? -1 : 1)).slice(0, 40).map((quest) => {
+    const objectiveMarkup = objectiveQuests.length ? `<div class="source-quest-list">${objectiveQuests.sort((a, b) => (a.rank === b.rank ? a.name.localeCompare(b.name) : a.rank === 'Low' ? -1 : 1)).map((quest) => {
       const targets = Object.entries(quest.targets || {}).filter(([id]) => monsterIds.has(Number(id))).map(([id, count]) => `${escapeHtml(MONSTER_NAMES.get(Number(id)) || `Especie ${id}`)}${count > 1 ? ` ×${formatNumber(count)}` : ''}`).join(', ');
       const status = questSaveStatus(profile, quest);
       return `<article class="source-quest-row"><div><strong>${escapeHtml(quest.name)}</strong><small>${escapeHtml(QUEST_REGION_LABELS[quest.region] || quest.region)} · ${escapeHtml(QUEST_RANK_LABELS[quest.rank] || quest.rank)} · ${escapeHtml(targets)} · ${escapeHtml(status.label)}</small></div><span>${formatNumber(quest.hrp || 0)} HRP</span></article>`;
     }).join('')}</div>` : '<div class="source-empty">No aparecen misiones catalogadas con estos monstruos como objetivo principal.</div>';
+    const recipeMarkup = renderWeaponRecipeSources(appState.materialSourceItemId);
     const itemName = ITEM_NAMES.get(appState.materialSourceItemId) || `Objeto ${hex(appState.materialSourceItemId)}`;
-    return `<div class="source-result-heading"><div><h4>${escapeHtml(itemName)}</h4><span>En el baúl: ${formatNumber(profile.itemCounts.get(appState.materialSourceItemId) || 0)}</span></div><button type="button" class="material-guide-link" data-clear-material-source>Limpiar selección</button></div><div class="source-result-section"><h5>Botín de monstruos</h5><p>Porcentaje y cantidad por resultado, según la tabla indicada.</p>${monsterMarkup}</div><div class="source-result-section"><h5>Recompensas secundarias de misión</h5><p>Chance de la tabla secundaria; no representa una recompensa garantizada.</p>${questMarkup}</div>${monsterIds.size ? `<div class="source-result-section"><h5>Misiones con estos monstruos como objetivo</h5><p>Sirve para elegir una misión de caza; no indica que esté desbloqueada.</p>${objectiveMarkup}</div>` : ''}`;
+    return `<div class="source-result-heading"><div><h4>${escapeHtml(itemName)}</h4><span>En el baúl: ${formatNumber(profile.itemCounts.get(appState.materialSourceItemId) || 0)}</span></div><button type="button" class="material-guide-link" data-clear-material-source>Limpiar selección</button></div><div class="source-result-section"><h5>Botín de monstruos</h5><p>Porcentaje y cantidad por resultado, según la tabla indicada.</p>${monsterMarkup}</div>${recipeMarkup}<div class="source-result-section"><h5>Recompensas secundarias de misión</h5><p>Todos los resultados de la tabla; su chance no garantiza que salga el objeto.</p>${questMarkup}</div>${monsterIds.size ? `<div class="source-result-section"><h5>Misiones con estos monstruos como objetivo</h5><p>Sirve para elegir una misión de caza; no indica que esté desbloqueada.</p>${objectiveMarkup}</div>` : ''}`;
   }
 
   function renderMaterialSources(profile) {
@@ -1205,7 +1269,7 @@
         ? `<ul class="history-change-list ${tone}">${ids.map((id) => `<li>${escapeHtml(questTitle(id))}</li>`).join('')}</ul>`
         : `<p class="history-no-changes">${emptyText}</p>`;
       const itemTable = changedItems.length
-        ? `<div class="table-wrap history-table-wrap"><table><thead><tr><th>Objeto del baúl</th><th class="numeric">Antes</th><th class="numeric">Ahora</th><th class="numeric">Diferencia neta</th></tr></thead><tbody>${changedItems.slice(0, 40).map((item) => `<tr><td>${escapeHtml(item.name)} <small>${hex(item.id)}</small></td><td class="numeric">${formatNumber(item.before)}</td><td class="numeric">${formatNumber(item.now)}</td><td class="numeric ${item.delta > 0 ? 'number-positive' : 'number-negative'}">${deltaLabel(item.delta)}</td></tr>`).join('')}</tbody></table></div>${changedItems.length > 40 ? `<p class="small-note">Se muestran 40 de ${formatNumber(changedItems.length)} tipos de objeto con cambios.</p>` : ''}`
+        ? `<div class="table-wrap history-table-wrap"><table><thead><tr><th>Objeto del baúl</th><th class="numeric">Antes</th><th class="numeric">Ahora</th><th class="numeric">Diferencia neta</th></tr></thead><tbody>${changedItems.map((item) => `<tr><td>${escapeHtml(item.name)} <small>${hex(item.id)}</small></td><td class="numeric">${formatNumber(item.before)}</td><td class="numeric">${formatNumber(item.now)}</td><td class="numeric ${item.delta > 0 ? 'number-positive' : 'number-negative'}">${deltaLabel(item.delta)}</td></tr>`).join('')}</tbody></table></div>`
         : '<div class="history-no-changes">No cambiaron las cantidades registradas en el baúl.</div>';
       comparison = `<div class="history-selected"><label for="historyBaseline">Comparar el save actual con<select id="historyBaseline" ${snapshots.length ? '' : 'disabled'}>${selectOptions}</select></label><span>Guardado: ${escapeHtml(snapshotTimestamp(baseline.capturedAt))}</span></div><div class="history-stats">${stat('RC actual', `RC ${profile.rank}`, `Punto guardado: RC ${baseline.rank} · cambio ${deltaLabel(profile.rank - baseline.rank)}`)}${stat('HRP actual', formatNumber(profile.points), `Punto guardado: ${formatNumber(baseline.points)} · cambio ${deltaLabel(profile.points - baseline.points)}`)}${stat('Zenny actual', formatNumber(profile.zenny), `Punto guardado: ${formatNumber(baseline.zenny)} · cambio ${deltaLabel(profile.zenny - baseline.zenny)}`)}${stat('Misiones nuevas', formatNumber(addedQuests.length), `${formatNumber(removedQuests.length)} dejaron de figurar como completadas`, addedQuests.length ? 'number-positive' : '')}${stat('Tipos de objeto cambiados', formatNumber(changedItems.length), 'Diferencias en el baúl')}</div><div class="history-change-grid"><section><h4>Misiones que ahora figuran completadas</h4>${questList(addedQuests, 'Ninguna misión nueva registrada.', 'history-added')}</section><section><h4>Misiones que ya no figuran completadas</h4>${questList(removedQuests, 'No desaparecieron banderas de misión.', 'history-removed')}</section></div><section class="history-items"><h4>Cambios netos del baúl</h4>${itemTable}</section><p class="small-note">Las diferencias de objetos no indican cómo se obtuvieron o usaron: el guardado puede cambiar por recolección, venta, forja o traslado entre baúl y bolsa. Comparación local basada en el registro cargado actualmente.</p>`;
     }

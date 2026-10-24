@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0 · actualización grande
+
+- Mostrar todos los resultados de cada tabla secundaria de misión como fichas separadas, quitar el recorte a cuatro entradas y abrir la guía del material al seleccionarlo.
+- Añadir objetivos secundarios de misión con objetivo, materiales/monstruos, pago y HRP catalogados.
+- Quitar límites de 60 misiones en las fuentes de materiales y 40 misiones objetivo, para no ocultar coincidencias.
+- Añadir búsqueda inversa de recetas: al consultar un material, mostrar todas las armas que lo forjan o lo usan en una mejora, junto con cantidades y arma de origen.
+- Mostrar la lista completa de objetos que cambiaron entre puntos de control del baúl.
+- Mantener las advertencias de cobertura: el catálogo comunitario de eventos/arena es parcial y las recetas de armadura y la recolección por nodos no están disponibles.
+
 ## 0.4.0-preview.1 · compilación local
 
 - Expand the offline catalog with 35 monsters, 35 material-drop tables and 172 quests; include hitzones, status tolerances, monster drops, quest payouts and secondary rewards from `mh3-data` 2.0.2.
