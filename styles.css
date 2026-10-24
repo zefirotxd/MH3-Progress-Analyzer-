@@ -45,6 +45,54 @@
 @media(max-width:760px){.monster-grid{grid-template-columns:1fr}.source-controls{grid-template-columns:1fr}.source-result-heading{align-items:flex-start}.source-drop-row{grid-template-columns:75px minmax(0,1fr)}.source-drop-row b{grid-column:2}.status-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.quest-filters{grid-template-columns:1fr 1fr}.quest-search-label{grid-column:1/-1}.source-result-heading{flex-direction:column}.source-item-matches{grid-template-columns:1fr}}
 
+/* Gathering atlas, complete secondary reward tables and optional remote artwork. */
+.nav-list{min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#244760 transparent}
+.gathering-filters{display:grid;grid-template-columns:minmax(180px,1.6fr) repeat(4,minmax(125px,1fr)) auto;align-items:end;gap:9px;margin-bottom:10px;padding:13px}
+.gathering-filters label{display:grid;gap:5px;min-width:0;color:#75d9e8;font-size:10px;font-weight:700}
+.gathering-filters input,.gathering-filters select{width:100%;min-width:0;padding:9px 10px;border:1px solid var(--line-strong);border-radius:7px;background:#091827;color:#dbe8f0;font-size:11px;outline:none}
+.gathering-filters input:focus,.gathering-filters select:focus{border-color:var(--cyan)}
+.gathering-count{margin:0 0 9px;font-size:10px}
+.gathering-catalog{display:grid;gap:12px}
+.gathering-map{padding:15px 16px}
+.gathering-map-heading,.gathering-area-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.gathering-map-heading{padding-bottom:11px;border-bottom:1px solid var(--line)}
+.gathering-map-heading h3,.gathering-area-heading h4{margin:0;color:#e0edf4;font-size:15px}
+.gathering-map-heading span,.gathering-area-heading span{display:block;margin-top:4px;color:#8198aa;font-size:9px}
+.gathering-area-group{padding-top:12px}
+.gathering-area-heading{margin:0 0 7px}
+.gathering-area-heading h4{font-size:12px;color:#9fdae4}
+.gathering-node-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.gathering-node{min-width:0;padding:9px;border:1px solid rgba(161,195,220,.11);border-radius:8px;background:rgba(7,20,33,.4)}
+.gathering-node-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px}
+.gathering-node-heading strong{color:#a9e3eb;font-size:10px}
+.gathering-node-heading strong small{color:#8198aa;font-size:8px;font-weight:500}
+.gathering-node-heading>span{flex-shrink:0;color:#c5d5df;font-size:9px}
+.gathering-item-list{display:flex;flex-wrap:wrap;gap:4px}
+.gathering-item{cursor:pointer;display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:4px 6px;border:1px solid rgba(161,195,220,.1);border-radius:5px;background:rgba(9,27,43,.72);color:#c5d6df;text-align:left}
+.gathering-item span{font-size:9px}
+.gathering-item small{color:#58d9ea;font-size:7px;white-space:nowrap}
+.gathering-item:hover{border-color:rgba(38,212,235,.45);background:rgba(17,73,91,.35)}
+.gathering-item-static{cursor:default;font-size:9px}
+.gathering-empty-result,.gathering-node-note{color:#839aac;font-size:8px;line-height:1.4}
+.gathering-node-note{margin:6px 0 0;color:#d2b879}
+.source-link-button{cursor:pointer;border:0;background:transparent;color:#63d8e9;padding:2px 4px;font-size:9px;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+.source-link-button:hover{color:#d9faff}
+.monster-identity{display:flex;align-items:center;gap:10px;min-width:0}
+.monster-portrait{position:relative;display:grid;place-items:center;flex:0 0 52px;width:52px;height:52px;overflow:hidden;border:1px solid rgba(38,212,235,.18);border-radius:10px;background:radial-gradient(circle at 50% 35%,rgba(35,154,181,.22),rgba(7,20,33,.82))}
+.monster-portrait img,.monster-portrait-fallback{position:absolute;inset:0;width:100%;height:100%}
+.monster-portrait img{object-fit:contain;padding:3px}
+.monster-portrait img.image-unavailable{opacity:0}
+.monster-portrait-fallback{display:grid;place-items:center;color:#55d7e9;font:700 16px 'Barlow Condensed',sans-serif;letter-spacing:.5px}
+.armor-piece-preview{position:relative;display:grid;place-items:center;height:118px;overflow:hidden;margin:9px 0;padding:8px;border:1px solid rgba(161,195,220,.1);border-radius:8px;background:radial-gradient(ellipse at 50% 25%,rgba(33,111,139,.16),rgba(7,20,33,.48))}
+.armor-piece-preview img{position:absolute;inset:5px 8px 22px;width:calc(100% - 16px);height:calc(100% - 27px);object-fit:contain}
+.armor-piece-preview img.image-unavailable{opacity:0}
+.armor-piece-preview>span:last-child{position:absolute;bottom:6px;left:8px;right:8px;overflow:hidden;color:#8299aa;font-size:8px;text-align:center;text-overflow:ellipsis;white-space:nowrap}
+.armor-preview-fallback{display:grid;place-items:center;width:50px;height:50px;border:1px solid rgba(38,212,235,.2);border-radius:14px;background:rgba(15,60,78,.28);color:#65d8e8;font:700 17px 'Barlow Condensed',sans-serif}
+.armor-preview-empty{color:#8299aa;font-size:9px;text-align:center}
+.quest-reward-detail>small{display:block;margin-bottom:6px;color:#7e96a9;font-size:8px;text-transform:uppercase;letter-spacing:.45px}
+@media(max-width:1150px){.gathering-filters{grid-template-columns:repeat(3,minmax(0,1fr))}.gathering-filters label:first-child{grid-column:span 2}.gathering-node-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.gathering-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.gathering-filters label:first-child{grid-column:1/-1}.gathering-node-grid{grid-template-columns:1fr}.gathering-map-heading,.gathering-area-heading{align-items:flex-start}}
+
 .quest-reward-detail>small,.quest-subquests-detail>small{display:block;margin-bottom:7px;color:#8aa4b5;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
 .quest-reward-detail strong{display:block;line-height:1.75;white-space:normal}
 .quest-subquests-detail{grid-column:1/-1;padding-top:7px;border-top:1px solid rgba(161,195,220,.08)}

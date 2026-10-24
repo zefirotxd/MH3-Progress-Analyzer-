@@ -22,3 +22,27 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Optional remote visual references
+
+Monster icons and armor-set reference images are requested at runtime from the
+Monster Hunter Wiki on Fandom:
+https://monsterhunter.fandom.com/wiki/Category:MH3_Monster_Icons
+https://monsterhunter.fandom.com/wiki/Category:MH3_Armor
+
+The icon category lists 35 Monster Hunter Tri icons and notes community
+content is CC-BY-SA unless otherwise stated. The armor category credits
+Bobofango for captured/scanned images and carries the same general notice.
+These image files are not bundled or redistributed by this project. The source
+pages identify their individual contributors and applicable terms. Images may
+be unavailable when offline or when the source changes its file URLs.
+
+Gathering guide data
+
+Area and point tables are a normalized reference to the community guide at:
+https://game.daihouko.com/mh/3/
+Material-name cross-reference:
+https://monsterhunter.fandom.com/wiki/MH3:_Item_List
+
+The app includes only the tabulated map, area, point type, rank and possible
+items. It does not claim in-area coordinates or per-item probability.

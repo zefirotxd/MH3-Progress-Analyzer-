@@ -221,7 +221,7 @@
   function forgeGoalKey(type, targetId, startId, weaponIds) {
     return `${type}:${targetId}:${startId ?? 'new'}:${weaponIds.join('>')}`;
   }
-  const appState = { profiles: [], files: [], selected: 0, view: 'dashboard', monsterSearch: '', itemSearch: '', questSearch: '', questRegion: 'all', questRank: 'all', questLocation: 'all', questGoal: 'all', questProgression: 'all', questStatus: 'all', materialSourceSearch: '', materialSourceRank: 'all', materialSourceItemId: null, armorStyle: 'blade', set: {}, decorations: {}, weaponClass: WEAPON_CLASSES[0] || '', weaponTarget: '', weaponStart: '', weaponRoute: 0, weaponShoppingList: loadWeaponShoppingList(), progressSnapshots: [], historyBaselineId: '', savedSetPresets: [] };
+  const appState = { profiles: [], files: [], selected: 0, view: 'dashboard', monsterSearch: '', gatheringSearch: '', gatheringMap: 'all', gatheringArea: 'all', gatheringRank: 'all', gatheringType: 'all', itemSearch: '', questSearch: '', questRegion: 'all', questRank: 'all', questLocation: 'all', questGoal: 'all', questProgression: 'all', questStatus: 'all', materialSourceSearch: '', materialSourceRank: 'all', materialSourceItemId: null, armorStyle: 'blade', set: {}, decorations: {}, weaponClass: WEAPON_CLASSES[0] || '', weaponTarget: '', weaponStart: '', weaponRoute: 0, weaponShoppingList: loadWeaponShoppingList(), progressSnapshots: [], historyBaselineId: '', savedSetPresets: [] };
   const rankThreshold = (rank) => {
     const target = Math.max(0, Math.floor(rank));
     if (target === 0) return 0;
@@ -703,6 +703,54 @@
     return [...counts.entries()].map(([id, count]) => ({ id, name: MONSTER_NAMES.get(id), count })).sort((a, b) => a.name.localeCompare(b.name));
   }
 
+  function fandomFileUrl(fileName) {
+    return `https://monsterhunter.fandom.com/wiki/Special:FilePath/${encodeURIComponent(fileName)}`;
+  }
+
+  const ARMOR_ART_ALIASES = {
+    'Great Jaggi': ['Jaggie'], 'Great Baggi': ['DosBaggi'], Deviljho: ['Ibirujo'],
+    'Royal Ludroth': ['Roarudorosu'], Gigginox: ['Giginebura'], Barioth: ['Beliolos'],
+    Rhenoplos: ['Rinopros'], Bnahabra: ['Bunaha'], 'Jhen Mohran': ['Moran'],
+    Leather: ['LeatherArmor'], Chain: ['ChainArmor'], Steel: ['MH3-SteelArmor'],
+  };
+
+  function armorImageCandidates(family, style) {
+    const aliases = [...new Set([family, ...(ARMOR_ART_ALIASES[family] || [])])];
+    const styleNames = style === 'Blademaster' ? ['Blademaster', 'Blade'] : ['Gunner'];
+    const fileNames = [`MH3-${family} Armor (${style}) Render.png`];
+    for (const alias of aliases) {
+      for (const styleName of styleNames) {
+        fileNames.push(`${alias}-${styleName}.png`, `MH3-${alias}-${styleName}.png`);
+      }
+    }
+    if (family === 'Leather') fileNames.push('LeatherArmor.png', 'LeatherPants.png');
+    if (family === 'Chain') fileNames.push('ChainArmor.png');
+    return [...new Set(fileNames)].map(fandomFileUrl);
+  }
+
+  function initials(label) {
+    return String(label || 'MH3').split(/\s+/).slice(0, 2).map((word) => word[0] || '').join('').toLocaleUpperCase('en');
+  }
+
+  function bindRemoteImages(root) {
+    root.querySelectorAll('img[data-image-candidates]').forEach((image) => {
+      let candidates = [];
+      try { candidates = JSON.parse(image.dataset.imageCandidates); } catch { candidates = []; }
+      let candidateIndex = 0;
+      image.addEventListener('error', () => {
+        candidateIndex += 1;
+        if (candidateIndex < candidates.length) image.src = candidates[candidateIndex];
+        else image.classList.add('image-unavailable');
+      });
+      if (candidates.length > 0) image.src = candidates[0];
+    });
+  }
+
+  function monsterImageMarkup(monster) {
+    const candidates = [fandomFileUrl(`MH3-${monster.name} Icon.png`), fandomFileUrl(`MH3-${monster.name} Icon 001.png`)];
+    return `<span class="monster-portrait" aria-hidden="true"><span class="monster-portrait-fallback">${escapeHtml(initials(monster.name))}</span><img loading="lazy" data-image-candidates="${escapeHtml(JSON.stringify(candidates))}" alt=""></span>`;
+  }
+
   function renderHunts(profile) {
     const progress = new Map(monsterProgress(profile).map((monster) => [monster.id, monster.count]));
     const query = appState.monsterSearch.trim().toLocaleLowerCase('es');
@@ -718,9 +766,77 @@
       const hitzoneMarkup = states.length ? states.map((state) => `<div class="hitzone-state"><strong>${escapeHtml(state.name)}</strong><div class="table-wrap hitzone-table-wrap"><table><thead><tr><th>Zona</th>${damageTypes.map(([, label]) => `<th>${label}</th>`).join('')}</tr></thead><tbody>${(state.hitzones || []).map((zone) => `<tr><td>${escapeHtml(zone.name)}</td>${damageTypes.map(([key]) => `<td>${zone.values?.[key] == null ? '—' : percent(zone.values[key])}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`).join('') : '<div class="hitzone-empty">El catálogo no trae zonas de daño para esta especie.</div>';
       const statusRows = Object.entries(monster.status || {}).map(([key, status]) => `<div class="status-chip"><strong>${escapeHtml(STATUS_LABELS[key] || key)}</strong><span>Inicio ${status.tolerance?.initial == null ? '—' : formatNumber(status.tolerance.initial)} · máxima ${status.tolerance?.max == null ? '—' : formatNumber(status.tolerance.max)}${status.duration ? ` · ${formatNumber(status.duration)} s` : ''}</span></div>`).join('');
       const count = progress.get(monster.id) || 0;
-      return `<article class="monster-card"><div class="monster-card-header"><div><strong>${escapeHtml(monster.name)}</strong><small>${escapeHtml(MONSTER_TYPE_LABELS[monster.type] || monster.type || 'Especie')} · ${count ? `${count} misión${count === 1 ? '' : 'es'} completada${count === 1 ? '' : 's'} con esta especie como objetivo` : 'Sin objetivo completado registrado'} · ${hex(monster.id)}</small></div><span class="monster-count">${formatNumber(count)}</span></div><details class="monster-details"><summary>Preparación: hitzones y estados</summary><div class="monster-guide-body"><p class="monster-guide-legend">Porcentajes catalogados por zona; números más altos representan mayor vulnerabilidad según la tabla.</p>${hitzoneMarkup}${statusRows ? `<h4>Tolerancia a estados</h4><div class="status-grid">${statusRows}</div>` : '<div class="hitzone-empty">El catálogo no incluye tolerancias de estado para esta especie.</div>'}</div></details></article>`;
+      return `<article class="monster-card"><div class="monster-card-header"><div class="monster-identity">${monsterImageMarkup(monster)}<div><strong>${escapeHtml(monster.name)}</strong><small>${escapeHtml(MONSTER_TYPE_LABELS[monster.type] || monster.type || 'Especie')} · ${count ? `${count} misión${count === 1 ? '' : 'es'} completada${count === 1 ? '' : 's'} con esta especie como objetivo` : 'Sin objetivo completado registrado'} · ${hex(monster.id)}</small></div></div><span class="monster-count">${formatNumber(count)}</span></div><details class="monster-details"><summary>Preparación: hitzones y estados</summary><div class="monster-guide-body"><p class="monster-guide-legend">Porcentajes catalogados por zona; números más altos representan mayor vulnerabilidad según la tabla.</p>${hitzoneMarkup}${statusRows ? `<h4>Tolerancia a estados</h4><div class="status-grid">${statusRows}</div>` : '<div class="hitzone-empty">El catálogo no incluye tolerancias de estado para esta especie.</div>'}</div></details></article>`;
     }).join('');
     $('#monsterGrid').innerHTML = cards || '<div class="table-empty">No hay especies que coincidan con la búsqueda.</div>';
+    bindRemoteImages($('#monsterGrid'));
+  }
+
+  function gatheringRankLabel(rank) {
+    return rank === 'Low' ? 'Rango bajo' : rank === 'High' ? 'Rango alto' : 'Libre · Bosque de Moga';
+  }
+
+  function gatheringQuantityLabel(quantity) {
+    if (quantity?.infinite) return 'Punto renovable';
+    if (Number.isFinite(quantity?.min) && Number.isFinite(quantity?.max)) {
+      return quantity.min === quantity.max ? `×${quantity.min}` : `×${quantity.min}–${quantity.max}`;
+    }
+    return '';
+  }
+
+  function updateGatheringAreaOptions() {
+    const mapId = $('#gatheringMap').value;
+    const maps = DATA.gathering?.maps || [];
+    const areas = [...new Set(maps.filter((map) => mapId === 'all' || map.id === mapId)
+      .flatMap((map) => map.nodes.map((node) => node.area)))].sort((a, b) => a.localeCompare(b, 'es'));
+    const selected = areas.includes(appState.gatheringArea) ? appState.gatheringArea : 'all';
+    appState.gatheringArea = selected;
+    $('#gatheringArea').innerHTML = '<option value="all">Todas las áreas</option>'
+      + areas.map((area) => `<option value="${escapeHtml(area)}" ${area === selected ? 'selected' : ''}>${escapeHtml(area)}</option>`).join('');
+  }
+
+  function renderGatheringGuide() {
+    const catalog = DATA.gathering;
+    const maps = catalog?.maps || [];
+    const canOpenMaterialSources = Boolean(currentProfile());
+    if (!maps.length) {
+      $('#gatheringCatalog').innerHTML = '<div class="source-empty">No se incluyó el catálogo de puntos de recolección en esta compilación.</div>';
+      $('#gatheringCount').textContent = 'Catálogo no disponible';
+      return;
+    }
+    const query = appState.gatheringSearch.trim().toLocaleLowerCase('es');
+    const chosenMaps = maps.filter((map) => appState.gatheringMap === 'all' || map.id === appState.gatheringMap);
+    let visibleNodes = 0;
+    let visibleResults = 0;
+    const mapMarkup = chosenMaps.map((map) => {
+      const nodes = map.nodes.filter((node) => {
+        if (appState.gatheringRank !== 'all' && node.rank !== appState.gatheringRank) return false;
+        if (appState.gatheringArea !== 'all' && node.area !== appState.gatheringArea) return false;
+        if (appState.gatheringType !== 'all' && node.type !== appState.gatheringType) return false;
+        if (!query) return true;
+        return `${map.name} ${map.sourceName} ${node.area} ${node.rank} ${node.type} ${node.items.map((item) => item.name).join(' ')}`
+          .toLocaleLowerCase('es').includes(query);
+      });
+      if (!nodes.length) return '';
+      visibleNodes += nodes.length;
+      visibleResults += nodes.reduce((total, node) => total + node.items.length, 0);
+      const groups = new Map();
+      for (const node of nodes) {
+        const key = `${node.rank}|${node.area}`;
+        if (!groups.has(key)) groups.set(key, { rank: node.rank, area: node.area, nodes: [] });
+        groups.get(key).nodes.push(node);
+      }
+      const areaMarkup = [...groups.values()].map((group) => `<section class="gathering-area-group"><div class="gathering-area-heading"><h4>${escapeHtml(group.area)}</h4><span>${escapeHtml(gatheringRankLabel(group.rank))} · ${group.nodes.length} punto${group.nodes.length === 1 ? '' : 's'}</span></div><div class="gathering-node-grid">${group.nodes.map((node) => {
+        const quantity = gatheringQuantityLabel(node.quantity);
+        const items = node.items.map((item) => item.itemId != null && canOpenMaterialSources
+          ? `<button type="button" class="gathering-item" data-material-source-pick="${Number(item.itemId)}"><span>${escapeHtml(item.name)}</span><small>Ver fuentes</small></button>`
+          : `<span class="gathering-item gathering-item-static">${escapeHtml(item.name)}</span>`).join('');
+        return `<article class="gathering-node"><div class="gathering-node-heading"><strong>${escapeHtml(node.type)}${node.pointCount > 1 ? ` <small>×${formatNumber(node.pointCount)} puntos</small>` : ''}</strong>${quantity ? `<span>${escapeHtml(quantity)}</span>` : ''}</div><div class="gathering-item-list">${items || '<span class="gathering-empty-result">La fuente no enumera materiales para este punto.</span>'}</div>${node.note ? `<p class="gathering-node-note">${escapeHtml(node.note)}</p>` : ''}</article>`;
+      }).join('')}</div></section>`).join('');
+      return `<article class="gathering-map panel"><div class="gathering-map-heading"><div><h3>${escapeHtml(map.name)}</h3><span>${map.kind === 'free-roam' ? 'Exploración libre' : 'Mapa de misión'} · ${nodes.length} puntos visibles</span></div><button type="button" class="source-link-button" data-open-external="${escapeHtml(map.sourceUrl)}">Ver fuente</button></div>${areaMarkup}</article>`;
+    }).join('');
+    $('#gatheringCount').textContent = `${formatNumber(visibleNodes)} puntos · ${formatNumber(visibleResults)} resultados de material mostrados completos`;
+    $('#gatheringCatalog').innerHTML = mapMarkup || '<div class="source-empty">No hay puntos con esos filtros. Prueba otro mapa, área, rango o búsqueda.</div>';
   }
 
   function questTargetSummary(quest) {
@@ -798,7 +914,7 @@
       ].filter(Boolean).join(' · ');
       const rewards = [...(quest.secondaryRewards || [])].sort((a, b) => b.chance - a.chance || (a.itemId || 0) - (b.itemId || 0));
       const rewardMarkup = rewards.length
-        ? '<div class="quest-reward-detail"><small>Tabla secundaria · ' + formatNumber(rewards.length) + ' resultados</small><div class="quest-reward-items">'
+        ? '<div class="quest-reward-detail"><small>Tabla secundaria · ' + formatNumber(rewards.length) + ' resultados completos</small><div class="quest-reward-items" role="list">'
           + rewards.map((reward) => {
             const itemName = ITEM_NAMES.get(reward.itemId) || 'Objeto ' + hex(reward.itemId);
             return '<button type="button" class="quest-reward-item" data-material-source-pick="' + Number(reward.itemId) + '" title="Buscar fuentes de ' + escapeHtml(itemName) + '"><strong>' + escapeHtml(itemName) + '</strong><span>×' + formatNumber(reward.count || 1) + ' · ' + formatNumber(reward.chance) + '%</span></button>';
@@ -884,6 +1000,22 @@
       + '<div class="source-quest-list">' + rows + '</div></div>';
   }
 
+  function renderGatheringMaterialSources(itemId) {
+    const maps = DATA.gathering?.maps || [];
+    const rows = [];
+    for (const map of maps) {
+      for (const node of map.nodes) {
+        if (appState.materialSourceRank !== 'all' && node.rank !== appState.materialSourceRank && node.rank !== 'Free roam') continue;
+        if (node.items.some((item) => item.itemId === itemId)) rows.push({ map, node });
+      }
+    }
+    if (!rows.length) return '<div class="source-empty">Este material no figura en los puntos de recolección catalogados.</div>';
+    return `<div class="source-quest-list">${rows.map(({ map, node }) => {
+      const quantity = gatheringQuantityLabel(node.quantity);
+      return `<article class="source-quest-row"><div><strong>${escapeHtml(map.name)} · ${escapeHtml(node.area)}</strong><small>${escapeHtml(gatheringRankLabel(node.rank))} · ${escapeHtml(node.type)}${node.pointCount > 1 ? ` · ${formatNumber(node.pointCount)} puntos` : ''}${quantity ? ` · ${escapeHtml(quantity)}` : ''}</small></div><button type="button" class="material-guide-link" data-open-gathering-search="${Number(itemId)}">Abrir guía</button></article>`;
+    }).join('')}</div>`;
+  }
+
   function collectMaterialSources(profile) {
     const sourcesByMonster = new Map();
     const rankPairs = appState.materialSourceRank === 'all'
@@ -945,8 +1077,9 @@
       return `<article class="source-quest-row"><div><strong>${escapeHtml(quest.name)}</strong><small>${escapeHtml(QUEST_REGION_LABELS[quest.region] || quest.region)} · ${escapeHtml(QUEST_RANK_LABELS[quest.rank] || quest.rank)} · ${escapeHtml(targets)} · ${escapeHtml(status.label)}</small></div><span>${formatNumber(quest.hrp || 0)} HRP</span></article>`;
     }).join('')}</div>` : '<div class="source-empty">No aparecen misiones catalogadas con estos monstruos como objetivo principal.</div>';
     const recipeMarkup = renderWeaponRecipeSources(appState.materialSourceItemId);
+    const gatheringMarkup = renderGatheringMaterialSources(appState.materialSourceItemId);
     const itemName = ITEM_NAMES.get(appState.materialSourceItemId) || `Objeto ${hex(appState.materialSourceItemId)}`;
-    return `<div class="source-result-heading"><div><h4>${escapeHtml(itemName)}</h4><span>En el baúl: ${formatNumber(profile.itemCounts.get(appState.materialSourceItemId) || 0)}</span></div><button type="button" class="material-guide-link" data-clear-material-source>Limpiar selección</button></div><div class="source-result-section"><h5>Botín de monstruos</h5><p>Porcentaje y cantidad por resultado, según la tabla indicada.</p>${monsterMarkup}</div>${recipeMarkup}<div class="source-result-section"><h5>Recompensas secundarias de misión</h5><p>Todos los resultados de la tabla; su chance no garantiza que salga el objeto.</p>${questMarkup}</div>${monsterIds.size ? `<div class="source-result-section"><h5>Misiones con estos monstruos como objetivo</h5><p>Sirve para elegir una misión de caza; no indica que esté desbloqueada.</p>${objectiveMarkup}</div>` : ''}`;
+    return `<div class="source-result-heading"><div><h4>${escapeHtml(itemName)}</h4><span>En el baúl: ${formatNumber(profile.itemCounts.get(appState.materialSourceItemId) || 0)}</span></div><button type="button" class="material-guide-link" data-clear-material-source>Limpiar selección</button></div><div class="source-result-section"><h5>Botín de monstruos</h5><p>Porcentaje y cantidad por resultado, según la tabla indicada.</p>${monsterMarkup}</div>${recipeMarkup}<div class="source-result-section"><h5>Recompensas secundarias de misión</h5><p>Se muestran todos los resultados de cada tabla; su chance no garantiza que salga el objeto.</p>${questMarkup}</div><div class="source-result-section"><h5>Recolección por mapa</h5><p>Área y tipo de punto de la guía; no hay coordenadas ni porcentajes por material.</p>${gatheringMarkup}</div>${monsterIds.size ? `<div class="source-result-section"><h5>Misiones con estos monstruos como objetivo</h5><p>Sirve para elegir una misión de caza; no indica que esté desbloqueada.</p>${objectiveMarkup}</div>` : ''}`;
   }
 
   function renderMaterialSources(profile) {
@@ -1348,11 +1481,18 @@
 
   function renderSetBuilder() {
     const root = $('#setBuilder');
+    const armorFamily = (piece) => piece.name.replace(/\s+(?:Cap|Coat|Coil|Faulds|Greaves|Guards|Helm|Leggings|Mail|Vambraces|Vest|Earring|Bandolier|Espadrilles|Gauntlets|Girdle|Turban)(?:\+)?$/i, '').replace(/\+$/, '').trim();
+    const armorStyleName = appState.armorStyle === 'gunner' ? 'Gunner' : 'Blademaster';
     root.innerHTML = PIECE_TYPES.map((type) => {
       const chosen = appState.set[type] || '';
       const options = ARMOR.filter((piece) => piece.type === type && piece[appState.armorStyle]);
       const selectedPiece = options.find((piece) => String(piece.id) === String(chosen));
-      return `<div class="piece-card"><label for="piece-${type}">${ARMOR_BY_TYPE[type]}</label><select id="piece-${type}" data-piece="${type}"><option value="">Elegir pieza…</option>${options.map((piece) => `<option value="${piece.id}" ${String(piece.id) === String(chosen) ? 'selected' : ''}>${escapeHtml(piece.name)} · DEF ${piece.defense} · ${piece.slots} ran.</option>`).join('')}</select>${renderDecorationControls(type, selectedPiece)}</div>`;
+      const family = selectedPiece ? armorFamily(selectedPiece) : '';
+      const imageCandidates = family ? armorImageCandidates(family, armorStyleName) : [];
+      const preview = selectedPiece
+        ? `<div class="armor-piece-preview"><span class="armor-preview-fallback">${escapeHtml(initials(family))}</span><img loading="lazy" data-image-candidates="${escapeHtml(JSON.stringify(imageCandidates))}" alt="Vista de referencia del set ${escapeHtml(family)} ${armorStyleName}"><span>Vista del set · ${escapeHtml(family)}</span></div>`
+        : '<div class="armor-piece-preview armor-preview-empty">Elige una pieza para ver su referencia visual.</div>';
+      return `<div class="piece-card"><label for="piece-${type}">${ARMOR_BY_TYPE[type]}</label><select id="piece-${type}" data-piece="${type}"><option value="">Elegir pieza…</option>${options.map((piece) => `<option value="${piece.id}" ${String(piece.id) === String(chosen) ? 'selected' : ''}>${escapeHtml(piece.name)} · DEF ${piece.defense} · ${piece.slots} ran.</option>`).join('')}</select>${preview}${renderDecorationControls(type, selectedPiece)}</div>`;
     }).join('');
     root.querySelectorAll('[data-piece]').forEach((select) => select.addEventListener('change', () => {
       const value = select.value;
@@ -1393,6 +1533,7 @@
       else delete appState.decorations[type];
       renderSetBuilder();
     }));
+    bindRemoteImages(root);
     renderSetSummary();
     renderSetPresets();
   }
@@ -1554,6 +1695,7 @@
       renderVillage(profile);
       renderQuestCatalog(profile);
       renderHunts(profile);
+      renderGatheringGuide();
       renderMaterials(profile);
       renderSaveInspector();
       renderProgressHistory(profile);
@@ -1568,6 +1710,9 @@
 
   function showView(view, updateTitle = true) {
     appState.view = view;
+    const hasProfile = Boolean(currentProfile());
+    $('#emptyState').classList.toggle('hidden', hasProfile || view === 'gathering');
+    $('#appContent').classList.toggle('hidden', !hasProfile && view !== 'gathering');
     $$('.nav-item').forEach((button) => {
       const active = button.dataset.view === view;
       button.classList.toggle('active', active);
@@ -1581,6 +1726,7 @@
       village: ['PROGRESO DE HISTORIA', 'Aldea de Moga'],
       quests: ['CATÁLOGO DE MISIONES', 'Explorar misiones'],
       hunts: ['GUÍA DE CAZA', 'Guía de monstruos'],
+      gathering: ['GUÍA DE RECOLECCIÓN', 'Dónde encontrar materiales'],
       materials: ['BAÚL DE OBJETOS', 'Materiales'],
       save: ['DIAGNÓSTICO DE PARTIDA', 'Inspector de save'],
       history: ['PUNTOS DE CONTROL LOCALES', 'Historial de progreso'],
@@ -1597,6 +1743,34 @@
   const questLocations = [...new Set(DATA.quests.map((quest) => quest.location).filter(Boolean))].sort((a, b) => a.localeCompare(b));
   $('#questGoal').insertAdjacentHTML('beforeend', questGoals.map((goal) => `<option value="${escapeHtml(goal)}">${escapeHtml(QUEST_GOAL_LABELS[goal] || goal)}</option>`).join(''));
   $('#questLocation').insertAdjacentHTML('beforeend', questLocations.map((location) => `<option value="${escapeHtml(location)}">${escapeHtml(location)}</option>`).join(''));
+  const gatheringMaps = DATA.gathering?.maps || [];
+  $('#gatheringMap').insertAdjacentHTML('beforeend', gatheringMaps.map((map) => `<option value="${escapeHtml(map.id)}">${escapeHtml(map.name)}</option>`).join(''));
+  const gatheringTypes = [...new Set(gatheringMaps.flatMap((map) => map.nodes.map((node) => node.type)))].sort((a, b) => a.localeCompare(b, 'es'));
+  $('#gatheringType').insertAdjacentHTML('beforeend', gatheringTypes.map((type) => `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join(''));
+  updateGatheringAreaOptions();
+  $('#gatheringSearch').addEventListener('input', (event) => { appState.gatheringSearch = event.target.value; renderGatheringGuide(); });
+  $('#gatheringMap').addEventListener('change', (event) => {
+    appState.gatheringMap = event.target.value;
+    appState.gatheringArea = 'all';
+    updateGatheringAreaOptions();
+    renderGatheringGuide();
+  });
+  $('#gatheringArea').addEventListener('change', (event) => { appState.gatheringArea = event.target.value; renderGatheringGuide(); });
+  $('#gatheringRank').addEventListener('change', (event) => { appState.gatheringRank = event.target.value; renderGatheringGuide(); });
+  $('#gatheringType').addEventListener('change', (event) => { appState.gatheringType = event.target.value; renderGatheringGuide(); });
+  $('#resetGatheringFilters').addEventListener('click', () => {
+    appState.gatheringSearch = '';
+    appState.gatheringMap = 'all';
+    appState.gatheringArea = 'all';
+    appState.gatheringRank = 'all';
+    appState.gatheringType = 'all';
+    $('#gatheringSearch').value = '';
+    $('#gatheringMap').value = 'all';
+    $('#gatheringRank').value = 'all';
+    $('#gatheringType').value = 'all';
+    updateGatheringAreaOptions();
+    renderGatheringGuide();
+  });
   const updateQuestFilters = () => {
     appState.questSearch = $('#questSearch').value;
     appState.questRegion = $('#questRegion').value;
@@ -1705,8 +1879,41 @@
       saveCurrentSetPreset();
     }
   });
-  $$('.nav-item').forEach((button) => button.addEventListener('click', () => showView(button.dataset.view)));
+  $$('.nav-item').forEach((button) => button.addEventListener('click', () => {
+    const view = button.dataset.view;
+    if (!currentProfile() && view !== 'gathering') {
+      notify('Carga una partida para consultar el progreso. La guía de recolección está disponible sin abrir un save.');
+      return;
+    }
+    if (view === 'gathering') renderGatheringGuide();
+    showView(view);
+  }));
   document.addEventListener('click', (event) => {
+    const externalSource = event.target.closest('[data-open-external]');
+    if (externalSource) {
+      window.mh3Desktop?.openExternal(externalSource.dataset.openExternal).then((result) => {
+        if (result?.error) notify(result.error);
+      }).catch(() => notify('No se pudo abrir la página de la fuente.'));
+      return;
+    }
+    const openGatheringSearch = event.target.closest('[data-open-gathering-search]');
+    if (openGatheringSearch) {
+      const item = DATA.items.find((entry) => entry.id === Number(openGatheringSearch.dataset.openGatheringSearch));
+      if (!item) return;
+      appState.gatheringSearch = item.name;
+      appState.gatheringMap = 'all';
+      appState.gatheringArea = 'all';
+      appState.gatheringRank = 'all';
+      appState.gatheringType = 'all';
+      $('#gatheringSearch').value = item.name;
+      $('#gatheringMap').value = 'all';
+      $('#gatheringRank').value = 'all';
+      $('#gatheringType').value = 'all';
+      updateGatheringAreaOptions();
+      renderGatheringGuide();
+      showView('gathering');
+      return;
+    }
     const go = event.target.closest('[data-goto]');
     if (go) showView(go.dataset.goto);
     const materialSourcePick = event.target.closest('[data-material-source-pick]');

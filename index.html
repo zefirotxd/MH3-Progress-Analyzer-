@@ -32,6 +32,7 @@
         <button class="nav-item" data-view="village"><span class="nav-icon">⌂</span>Aldea de Moga</button>
         <button class="nav-item" data-view="quests"><span class="nav-icon">☷</span>Misiones</button>
         <button class="nav-item" data-view="hunts"><span class="nav-icon">◈</span>Monstruos</button>
+        <button class="nav-item" data-view="gathering"><span class="nav-icon">⌖</span>Recolección</button>
         <button class="nav-item" data-view="materials"><span class="nav-icon">▦</span>Materiales</button>
         <button class="nav-item" data-view="save"><span class="nav-icon">⌕</span>Inspector de save</button>
         <button class="nav-item" data-view="history"><span class="nav-icon">↔</span>Historial</button>
@@ -98,7 +99,22 @@
           <div class="section-intro"><div><div class="eyebrow">GUÍA DE CAZA</div><h2>Monstruos, zonas y estados</h2></div><p>Consulta hitzones, afinidades elementales y tolerancias a estados. El progreso de misiones se muestra aparte: no equivale a un contador de cacerías.</p></div>
           <div class="toolbar"><input id="monsterSearch" type="search" placeholder="Buscar monstruo…"><span id="monsterCount" class="muted"></span></div>
           <div class="monster-grid" id="monsterGrid"></div>
-          <p class="small-note">Hitzones y tolerancias provienen del catálogo <code>mh3-data</code> 2.0.2. Las especies sin una tabla registrada se muestran sin completar esos datos; el conteo de progreso usa solo objetivos de misiones marcadas.</p>
+          <p class="small-note">Hitzones y tolerancias provienen del catálogo <code>mh3-data</code> 2.0.2. Los iconos se cargan desde Monster Hunter Wiki (Fandom) si hay conexión; las imágenes no se distribuyen con la app. Las especies sin una tabla registrada se muestran sin completar esos datos; el conteo de progreso usa solo objetivos de misiones marcadas. <button type="button" class="source-link-button" data-open-external="https://monsterhunter.fandom.com/wiki/Category:MH3_Monster_Icons">Fuente de iconos</button></p>
+        </section>
+
+        <section class="view" id="view-gathering">
+          <div class="section-intro"><div><div class="eyebrow">GUÍA DE RECOLECCIÓN</div><h2>Dónde encontrar cada material</h2></div><p>Busca un material o recorre mapa → área → punto. Se muestran todos los resultados registrados por la guía, separados por rango cuando corresponde.</p></div>
+          <div class="gathering-filters panel">
+            <label>Buscar material o punto<input id="gatheringSearch" type="search" placeholder="Ej.: Flashbug, minería, Área 5…" autocomplete="off"></label>
+            <label>Mapa<select id="gatheringMap"><option value="all">Todos los mapas</option></select></label>
+            <label>Área<select id="gatheringArea"><option value="all">Todas las áreas</option></select></label>
+            <label>Rango<select id="gatheringRank"><option value="all">Todos</option><option value="Low">Bajo</option><option value="High">Alto</option><option value="Free roam">Bosque de Moga</option></select></label>
+            <label>Tipo de punto<select id="gatheringType"><option value="all">Todos</option></select></label>
+            <button type="button" class="button button-secondary" id="resetGatheringFilters">Limpiar</button>
+          </div>
+          <div class="gathering-count muted" id="gatheringCount" role="status" aria-live="polite"></div>
+          <div class="gathering-catalog" id="gatheringCatalog"></div>
+          <p class="small-note">Fuente de puntos y resultados: GAME大宝庫, guía comunitaria de Monster Hunter 3 para Wii. Indica áreas y tipos de punto, pero no coordenadas dentro del área ni porcentajes. Puede haber omisiones. El catálogo se incluye localmente; las imágenes de monstruos y armaduras son opcionales y requieren conexión.</p>
         </section>
 
         <section class="view" id="view-quests">
@@ -122,7 +138,7 @@
           <div class="section-intro"><div><div class="eyebrow">BAÚL DE OBJETOS</div><h2>Lo que tienes guardado</h2></div><p>Lectura de los espacios del baúl. No incluye objetos que estén solamente en la bolsa del cazador.</p></div>
           <div class="request-panel panel" id="requestPanel"></div>
           <article class="panel material-source-panel" id="materialSourcePanel">
-            <div class="panel-heading"><div><h3>¿Dónde consigo un material?</h3><div class="panel-subtitle">Busca una pieza y revisa tallados, roturas, capturas, brillos y recompensas de misión.</div></div><span class="tag">Catálogo local</span></div>
+            <div class="panel-heading"><div><h3>¿Dónde consigo un material?</h3><div class="panel-subtitle">Busca una pieza y revisa tallados, roturas, capturas, brillos, recompensas y recolección por mapa.</div></div><span class="tag">Catálogo local</span></div>
             <div class="source-controls"><label for="materialSourceSearch">Buscar material<input id="materialSourceSearch" type="search" placeholder="Ej.: Placa Rathalos…" autocomplete="off"></label><label for="materialSourceRank">Rango<select id="materialSourceRank"><option value="all">Bajo y alto</option><option value="Low">Bajo</option><option value="High">Alto</option></select></label></div>
             <div id="materialSourceMatches" class="source-item-matches"></div>
             <div id="materialSourceResults" class="source-results" role="status" aria-live="polite" tabindex="-1"><div class="source-empty">Escribe el nombre de un material y elige un resultado. También puedes abrir esta búsqueda desde un faltante de tu lista de armas.</div></div>
@@ -173,12 +189,13 @@
             <p class="small-note">Se guardan las piezas y joyas elegidas, no datos de tu partida. Los sets permanecen en este equipo hasta que los borres.</p>
           </article>
           <div class="set-builder" id="setBuilder"></div>
+          <p class="small-note">Las vistas de armadura son referencias del set y pueden no coincidir exactamente con el modelo de cada pieza o género. Se cargan desde Monster Hunter Wiki (Fandom) y requieren internet. <button type="button" class="source-link-button" data-open-external="https://monsterhunter.fandom.com/wiki/Category:MH3_Armor">Fuente de armaduras</button></p>
           <div class="set-results" id="setResults"></div>
           <p class="small-note">La vista combina estadísticas, joyas colocadas en los espacios de cada pieza y Torso Up. No incluye mejoras ni amuletos; las recetas de armadura no están disponibles en la fuente de datos incluida.</p>
         </section>
       </div>
 
-      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.5.0</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
+      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.6.0</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
     </main>
   </div>
   <dialog id="saveCandidateDialog" class="save-candidate-dialog">

@@ -22,7 +22,10 @@
 - Show every secondary-reward outcome and every matching mission; list all changed item types in checkpoint comparisons.
 - Add reverse recipe lookup from an item to all weapon forging and upgrade recipes that consume it.
 - Show catalogued subquest objectives, material/monster targets, zenny reward and HRP in quest details.
-- Show explicit coverage notes for community-recovered data, partial event/arena quests and unavailable map gathering nodes.
+- Add the full map gathering guide for Moga free roam plus the five quest maps, with 171 nodes and 480 material/node outcomes; search by item, map, area, rank and point type, and jump from an item source to its map entries.
+- Guard the gathering importer with expected per-map point counts so it cannot silently omit triple points or special source types.
+- Add optional remote monster icons and armor-set visual references with local fallbacks, attribution and no bundled image redistribution.
+- Keep explicit coverage notes for community-recovered data and partial event/arena quests; map gathering entries identify area and point type but not in-area coordinates or drop chance.
 - Keep upstream data snapshots committed so app builds remain offline; provide a separate maintainer sync command.
 
 ## Next improvements, ordered by user value and evidence
@@ -35,7 +38,6 @@
 ### 2. Help answer “what do I need next?”
 
 - Add armor costs to the shopping list only when a reliable recipe source is available; the current catalog has no armor forge recipes.
-- Add map gathering-node sources only after finding a reliable dataset with exact map, area, node and rank coverage; the current upstream source has none.
 - Expand event/arena reward coverage only when a source can identify region/version and known omissions; keep MH3SP custom/private-server rotations separate from original-game quest records.
 - Mark quest requirements for specific progression gates with explicit evidence, without implying that every incomplete quest is currently available.
 

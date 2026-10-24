@@ -1,0 +1,3745 @@
+{
+  "sources": [
+    {
+      "name": "GAME大宝庫 · guía MH3 (tablas de puntos y áreas)",
+      "url": "https://game.daihouko.com/mh/3/",
+      "note": "Tablas comunitarias para Monster Hunter 3 (Wii); áreas, tipos de punto y materiales."
+    },
+    {
+      "name": "Monster Hunter Wiki · MH3 Item List (nombres en inglés)",
+      "url": "https://monsterhunter.fandom.com/wiki/MH3:_Item_List",
+      "note": "Referencia para asociar nombres japoneses con nombres ingleses del juego."
+    }
+  ],
+  "limitations": [
+    "El catálogo muestra materiales posibles por punto, no porcentajes de obtención.",
+    "La fuente identifica el área y tipo de punto, pero no coordenadas dentro del área.",
+    "Las zonas de misiones se separan por rango bajo y alto; el Bosque de Moga usa su tabla de modo libre.",
+    "Los resultados proceden de una guía comunitaria y pueden contener omisiones o errores."
+  ],
+  "maps": [
+    {
+      "id": "moga-woods",
+      "name": "Bosque de Moga",
+      "sourceName": "Moga Woods",
+      "kind": "free-roam",
+      "sourceUrl": "https://game.daihouko.com/mh/3/74.html",
+      "nodes": [
+        {
+          "area": "Campamento",
+          "rank": "Free roam",
+          "type": "Pesca",
+          "sourceType": "釣り",
+          "pointCount": 1,
+          "quantity": {
+            "infinite": true
+          },
+          "items": [
+            {
+              "name": "Whetfish",
+              "itemId": 193
+            },
+            {
+              "name": "Pin Tuna",
+              "itemId": 195
+            },
+            {
+              "name": "Armorfish Morsel",
+              "itemId": 217
+            },
+            {
+              "name": "Popfish",
+              "itemId": 196
+            },
+            {
+              "name": "Glutton Tuna",
+              "itemId": 200
+            },
+            {
+              "name": "Small Goldenfish",
+              "itemId": 202
+            }
+          ]
+        },
+        {
+          "area": "Área 1",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "infinite": true
+          },
+          "items": [
+            {
+              "name": "Torch",
+              "itemId": 42
+            }
+          ]
+        },
+        {
+          "area": "Área 1",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 4,
+            "max": 5
+          },
+          "items": [
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            },
+            {
+              "name": "Stone",
+              "itemId": 95
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 1",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 3,
+            "max": 6
+          },
+          "items": [
+            {
+              "name": "Herb",
+              "itemId": 120
+            },
+            {
+              "name": "Felvine",
+              "itemId": 534
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 1",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 3
+          },
+          "items": [
+            {
+              "name": "Herb",
+              "itemId": 120
+            },
+            {
+              "name": "Ivy",
+              "itemId": 130
+            },
+            {
+              "name": "Airweed",
+              "itemId": 135
+            },
+            {
+              "name": "Spider Web",
+              "itemId": 184
+            },
+            {
+              "name": "Sap Plant",
+              "itemId": 124
+            },
+            {
+              "name": "Might Seed",
+              "itemId": 131
+            }
+          ]
+        },
+        {
+          "area": "Área 1",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Stone",
+              "itemId": 95
+            },
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Aquaglow Jewel",
+              "itemId": 413
+            },
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            },
+            {
+              "name": "Machalite Ore",
+              "itemId": 99
+            }
+          ]
+        },
+        {
+          "area": "Área 1",
+          "rank": "Free roam",
+          "type": "Red para insectos",
+          "sourceType": "虫あみ",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 3
+          },
+          "items": [
+            {
+              "name": "Cricket",
+              "itemId": 188
+            },
+            {
+              "name": "Flashbug",
+              "itemId": 114
+            },
+            {
+              "name": "Bitterbug",
+              "itemId": 113
+            },
+            {
+              "name": "Godbug",
+              "itemId": 112
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            },
+            {
+              "name": "Thunderbug",
+              "itemId": 115
+            },
+            {
+              "name": "Firefly",
+              "itemId": 190
+            }
+          ]
+        },
+        {
+          "area": "Área 2",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Honey",
+              "itemId": 138
+            },
+            {
+              "name": "Snakebee Larva",
+              "itemId": 327
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 2",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 3,
+            "max": 5
+          },
+          "items": [
+            {
+              "name": "Blue Mushroom",
+              "itemId": 139
+            },
+            {
+              "name": "Exciteshroom",
+              "itemId": 142
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 2",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 8
+          },
+          "items": [
+            {
+              "name": "Blue Mushroom",
+              "itemId": 139
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            },
+            {
+              "name": "Unique Mushroom",
+              "itemId": 141
+            }
+          ]
+        },
+        {
+          "area": "Área 2",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 3
+          },
+          "items": [
+            {
+              "name": "Herb",
+              "itemId": 120
+            },
+            {
+              "name": "Ivy",
+              "itemId": 130
+            },
+            {
+              "name": "Airweed",
+              "itemId": 135
+            },
+            {
+              "name": "Spider Web",
+              "itemId": 184
+            },
+            {
+              "name": "Sap Plant",
+              "itemId": 124
+            },
+            {
+              "name": "Might Seed",
+              "itemId": 131
+            }
+          ]
+        },
+        {
+          "area": "Área 2",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 6
+          },
+          "items": [
+            {
+              "name": "Honey",
+              "itemId": 138
+            },
+            {
+              "name": "Snakebee Larva",
+              "itemId": 327
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 2",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 5
+          },
+          "items": [
+            {
+              "name": "Herb",
+              "itemId": 120
+            },
+            {
+              "name": "Ivy",
+              "itemId": 130
+            },
+            {
+              "name": "Airweed",
+              "itemId": 135
+            },
+            {
+              "name": "Spider Web",
+              "itemId": 184
+            },
+            {
+              "name": "Sap Plant",
+              "itemId": 124
+            },
+            {
+              "name": "Might Seed",
+              "itemId": 131
+            }
+          ]
+        },
+        {
+          "area": "Área 2",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 8
+          },
+          "items": [
+            {
+              "name": "Blue Mushroom",
+              "itemId": 139
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 2",
+          "rank": "Free roam",
+          "type": "Red para insectos",
+          "sourceType": "虫あみ",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Cricket",
+              "itemId": 188
+            },
+            {
+              "name": "Flashbug",
+              "itemId": 114
+            },
+            {
+              "name": "Bitterbug",
+              "itemId": 113
+            },
+            {
+              "name": "Godbug",
+              "itemId": 112
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            },
+            {
+              "name": "Thunderbug",
+              "itemId": 115
+            },
+            {
+              "name": "Firefly",
+              "itemId": 190
+            }
+          ]
+        },
+        {
+          "area": "Área 3",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 6
+          },
+          "items": [
+            {
+              "name": "Blue Mushroom",
+              "itemId": 139
+            },
+            {
+              "name": "Exciteshroom",
+              "itemId": 142
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 3",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 3
+          },
+          "items": [
+            {
+              "name": "Blue Mushroom",
+              "itemId": 139
+            },
+            {
+              "name": "Unique Mushroom",
+              "itemId": 141
+            },
+            {
+              "name": "Choice Mushroom",
+              "itemId": 140
+            }
+          ]
+        },
+        {
+          "area": "Área 3",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 3,
+            "max": 5
+          },
+          "items": [
+            {
+              "name": "Honey",
+              "itemId": 138
+            },
+            {
+              "name": "Snakebee Larva",
+              "itemId": 327
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 3",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 8
+          },
+          "items": [
+            {
+              "name": "Blue Mushroom",
+              "itemId": 139
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 3",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 6
+          },
+          "items": [
+            {
+              "name": "Honey",
+              "itemId": 138
+            },
+            {
+              "name": "Snakebee Larva",
+              "itemId": 327
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 3",
+          "rank": "Free roam",
+          "type": "Red para insectos",
+          "sourceType": "虫あみ",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 3
+          },
+          "items": [
+            {
+              "name": "Spider Web",
+              "itemId": 184
+            },
+            {
+              "name": "Cricket",
+              "itemId": 188
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 3",
+          "rank": "Free roam",
+          "type": "Red para insectos",
+          "sourceType": "虫あみ",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 5
+          },
+          "items": [
+            {
+              "name": "Cricket",
+              "itemId": 188
+            },
+            {
+              "name": "Flashbug",
+              "itemId": 114
+            },
+            {
+              "name": "Bitterbug",
+              "itemId": 113
+            },
+            {
+              "name": "Godbug",
+              "itemId": 112
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            },
+            {
+              "name": "Thunderbug",
+              "itemId": 115
+            },
+            {
+              "name": "Firefly",
+              "itemId": 190
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 1
+          },
+          "items": [
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 2
+          },
+          "items": [
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Machalite Ore",
+              "itemId": 99
+            },
+            {
+              "name": "Stone",
+              "itemId": 95
+            },
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            },
+            {
+              "name": "Aquaglow Jewel",
+              "itemId": 413
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Aquaglow Jewel",
+              "itemId": 413
+            },
+            {
+              "name": "Machalite Ore",
+              "itemId": 99
+            },
+            {
+              "name": "Stone",
+              "itemId": 95
+            },
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 5
+          },
+          "items": [
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Stone",
+              "itemId": 95
+            },
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 3
+          },
+          "items": [
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Stone",
+              "itemId": 95
+            },
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Stone",
+              "itemId": 95
+            },
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Stone",
+              "itemId": 95
+            },
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Free roam",
+          "type": "Red para insectos",
+          "sourceType": "虫あみ",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Flashbug",
+              "itemId": 114
+            },
+            {
+              "name": "Bitterbug",
+              "itemId": 113
+            },
+            {
+              "name": "Godbug",
+              "itemId": 112
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            },
+            {
+              "name": "Thunderbug",
+              "itemId": 115
+            },
+            {
+              "name": "Firefly",
+              "itemId": 190
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 1
+          },
+          "items": [
+            {
+              "name": "Dragonbone Piece",
+              "itemId": 241
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 1
+          },
+          "items": [
+            {
+              "name": "Fossil Piece",
+              "itemId": 243
+            }
+          ]
+        },
+        {
+          "area": "Área 5",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            },
+            {
+              "name": "Bone",
+              "itemId": 182
+            },
+            {
+              "name": "Unknown Skull",
+              "itemId": 137
+            },
+            {
+              "name": "Monster Bone S",
+              "itemId": 149
+            }
+          ]
+        },
+        {
+          "area": "Área 5",
+          "rank": "Free roam",
+          "type": "Red para insectos",
+          "sourceType": "虫あみ",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Flashbug",
+              "itemId": 114
+            },
+            {
+              "name": "Bitterbug",
+              "itemId": 113
+            },
+            {
+              "name": "Godbug",
+              "itemId": 112
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            },
+            {
+              "name": "Thunderbug",
+              "itemId": 115
+            },
+            {
+              "name": "Firefly",
+              "itemId": 190
+            }
+          ]
+        },
+        {
+          "area": "Área 6",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 4,
+            "max": 8
+          },
+          "items": [
+            {
+              "name": "Bone",
+              "itemId": 182
+            },
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            }
+          ]
+        },
+        {
+          "area": "Área 6",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            },
+            {
+              "name": "Bone",
+              "itemId": 182
+            },
+            {
+              "name": "Unknown Skull",
+              "itemId": 137
+            },
+            {
+              "name": "Monster Bone S",
+              "itemId": 149
+            }
+          ]
+        },
+        {
+          "area": "Área 6",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            },
+            {
+              "name": "Bone",
+              "itemId": 182
+            },
+            {
+              "name": "Unknown Skull",
+              "itemId": 137
+            },
+            {
+              "name": "Monster Bone S",
+              "itemId": 149
+            }
+          ]
+        },
+        {
+          "area": "Área 6",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 1
+          },
+          "items": [
+            {
+              "name": "Fossil Piece",
+              "itemId": 243
+            }
+          ]
+        },
+        {
+          "area": "Área 6",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 1
+          },
+          "items": [
+            {
+              "name": "Odd Egg",
+              "itemId": 244
+            }
+          ]
+        },
+        {
+          "area": "Área 6",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 1
+          },
+          "items": [
+            {
+              "name": "Dragonbone Piece",
+              "itemId": 241
+            }
+          ]
+        },
+        {
+          "area": "Área 7",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 3
+          },
+          "items": [
+            {
+              "name": "Blue Mushroom",
+              "itemId": 139
+            },
+            {
+              "name": "Unique Mushroom",
+              "itemId": 141
+            },
+            {
+              "name": "Choice Mushroom",
+              "itemId": 140
+            }
+          ]
+        },
+        {
+          "area": "Área 7",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 5,
+            "max": 10
+          },
+          "items": [
+            {
+              "name": "Herb",
+              "itemId": 120
+            },
+            {
+              "name": "Felvine",
+              "itemId": 534
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 7",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 3,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            },
+            {
+              "name": "Stone",
+              "itemId": 95
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 7",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 3
+          },
+          "items": [
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            },
+            {
+              "name": "Ancient Shard",
+              "itemId": 109
+            }
+          ],
+          "note": "La guía resume los resultados de rango alto/zona secreta sin enumerarlos."
+        },
+        {
+          "area": "Área 8",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Dung",
+              "itemId": 183
+            },
+            {
+              "name": "Machalite Ore",
+              "itemId": 99
+            }
+          ]
+        },
+        {
+          "area": "Área 8",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Bone",
+              "itemId": 182
+            },
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            }
+          ]
+        },
+        {
+          "area": "Área 8",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Bone",
+              "itemId": 182
+            },
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            }
+          ]
+        },
+        {
+          "area": "Área 8",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 3
+          },
+          "items": [
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Aquaglow Jewel",
+              "itemId": 413
+            },
+            {
+              "name": "Machalite Ore",
+              "itemId": 99
+            },
+            {
+              "name": "Stone",
+              "itemId": 95
+            },
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            }
+          ]
+        },
+        {
+          "area": "Área 8",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 1
+          },
+          "items": [
+            {
+              "name": "Odd Egg",
+              "itemId": 244
+            }
+          ]
+        },
+        {
+          "area": "Área 9",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 3
+          },
+          "items": [
+            {
+              "name": "Ivy",
+              "itemId": 130
+            },
+            {
+              "name": "Sap Plant",
+              "itemId": 124
+            },
+            {
+              "name": "Paintberry",
+              "itemId": 125
+            },
+            {
+              "name": "Might Seed",
+              "itemId": 131
+            },
+            {
+              "name": "Antidote Herb",
+              "itemId": 121
+            }
+          ]
+        },
+        {
+          "area": "Área 10",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 3
+          },
+          "items": [
+            {
+              "name": "Red Coral Stone",
+              "itemId": 398
+            },
+            {
+              "name": "Broken Shell",
+              "itemId": 147
+            },
+            {
+              "name": "Stone",
+              "itemId": 95
+            }
+          ]
+        },
+        {
+          "area": "Área 10",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "infinite": true
+          },
+          "items": [
+            {
+              "name": "Worm",
+              "itemId": 189
+            },
+            {
+              "name": "Frog",
+              "itemId": 192
+            }
+          ]
+        },
+        {
+          "area": "Área 10",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            },
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Machalite Ore",
+              "itemId": 99
+            }
+          ]
+        },
+        {
+          "area": "Área 10",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 2,
+            "max": 4
+          },
+          "items": [
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Machalite Ore",
+              "itemId": 99
+            },
+            {
+              "name": "Aquaglow Jewel",
+              "itemId": 413
+            },
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            }
+          ]
+        },
+        {
+          "area": "Área 10",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 1
+          },
+          "items": [
+            {
+              "name": "Dragonbone Piece",
+              "itemId": 241
+            }
+          ],
+          "note": "岩柱を破壊すると稀に採取ポイントが出現"
+        },
+        {
+          "area": "Área 10",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 1
+          },
+          "items": [
+            {
+              "name": "Fossil Piece",
+              "itemId": 243
+            }
+          ],
+          "note": "岩柱を破壊すると稀に採取ポイントが出現"
+        },
+        {
+          "area": "Área 10",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 1
+          },
+          "items": [
+            {
+              "name": "Abalone Piece",
+              "itemId": 242
+            }
+          ],
+          "note": "岩柱を破壊すると稀に採取ポイントが出現"
+        },
+        {
+          "area": "Área 10",
+          "rank": "Free roam",
+          "type": "Pesca",
+          "sourceType": "釣り",
+          "pointCount": 1,
+          "quantity": {
+            "infinite": true
+          },
+          "items": [
+            {
+              "name": "Sushifish",
+              "itemId": 194
+            },
+            {
+              "name": "Pin Tuna",
+              "itemId": 195
+            },
+            {
+              "name": "Scatterfish",
+              "itemId": 201
+            },
+            {
+              "name": "Small Goldenfish",
+              "itemId": 202
+            },
+            {
+              "name": "Whetfish",
+              "itemId": 193
+            },
+            {
+              "name": "Mystic Narwhal",
+              "itemId": 214
+            }
+          ]
+        },
+        {
+          "area": "Área 11",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 1,
+            "max": 1
+          },
+          "items": [
+            {
+              "name": "Dragonbone Piece",
+              "itemId": 241
+            }
+          ],
+          "note": "岩を破壊すると稀に採取ポイントが出現"
+        },
+        {
+          "area": "Área 12",
+          "rank": "Free roam",
+          "type": "Recolección",
+          "sourceType": "採取",
+          "pointCount": 1,
+          "quantity": {
+            "min": 4,
+            "max": 7
+          },
+          "items": [
+            {
+              "name": "Bone",
+              "itemId": 182
+            },
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            }
+          ]
+        },
+        {
+          "area": "Área 12",
+          "rank": "Free roam",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "quantity": {
+            "min": 4,
+            "max": 10
+          },
+          "items": [
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Machalite Ore",
+              "itemId": 99
+            },
+            {
+              "name": "Aquaglow Jewel",
+              "itemId": 413
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deserted-island",
+      "name": "Isla Desierta",
+      "sourceName": "Deserted Island",
+      "kind": "quest-map",
+      "sourceUrl": "https://game.daihouko.com/mh/3/92.html",
+      "nodes": [
+        {
+          "area": "Campamento",
+          "rank": "Low",
+          "type": "Pesca",
+          "sourceType": "釣り",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Whetfish",
+              "itemId": 193
+            },
+            {
+              "name": "Pin Tuna",
+              "itemId": 195
+            },
+            {
+              "name": "Popfish",
+              "itemId": 196
+            },
+            {
+              "name": "Glutton Tuna",
+              "itemId": 200
+            },
+            {
+              "name": "Small Goldenfish",
+              "itemId": 202
+            }
+          ]
+        },
+        {
+          "area": "Área 1",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Herb",
+              "itemId": 120
+            },
+            {
+              "name": "Felvine",
+              "itemId": 534
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 2",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実*2",
+          "pointCount": 2,
+          "items": [
+            {
+              "name": "Herb",
+              "itemId": 120
+            },
+            {
+              "name": "Airweed",
+              "itemId": 135
+            },
+            {
+              "name": "Ivy",
+              "itemId": 130
+            },
+            {
+              "name": "Spider Web",
+              "itemId": 184
+            },
+            {
+              "name": "Sap Plant",
+              "itemId": 124
+            },
+            {
+              "name": "Mightweed"
+            }
+          ]
+        },
+        {
+          "area": "Área 3",
+          "rank": "Low",
+          "type": "Hongos",
+          "sourceType": "キノコ",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Blue Mushroom",
+              "itemId": 139
+            },
+            {
+              "name": "Unique Mushroom",
+              "itemId": 141
+            },
+            {
+              "name": "Choice Mushroom",
+              "itemId": 140
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Low",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Firefly",
+              "itemId": 190
+            },
+            {
+              "name": "Bitterbug",
+              "itemId": 113
+            },
+            {
+              "name": "Godbug",
+              "itemId": 112
+            },
+            {
+              "name": "Thunderbug",
+              "itemId": 115
+            }
+          ]
+        },
+        {
+          "area": "Área 5",
+          "rank": "Low",
+          "type": "Huesos",
+          "sourceType": "骨",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            },
+            {
+              "name": "Bone",
+              "itemId": 182
+            },
+            {
+              "name": "Unknown Skull",
+              "itemId": 137
+            },
+            {
+              "name": "Monster Bone S",
+              "itemId": 149
+            }
+          ]
+        },
+        {
+          "area": "Área 6",
+          "rank": "Low",
+          "type": "Hongos",
+          "sourceType": "キノコ",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Blue Mushroom",
+              "itemId": 139
+            },
+            {
+              "name": "Unique Mushroom",
+              "itemId": 141
+            },
+            {
+              "name": "Choice Mushroom",
+              "itemId": 140
+            }
+          ]
+        },
+        {
+          "area": "Área 7",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Herb",
+              "itemId": 120
+            },
+            {
+              "name": "Felvine",
+              "itemId": 534
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 8",
+          "rank": "Low",
+          "type": "Huesos",
+          "sourceType": "骨*2",
+          "pointCount": 2,
+          "items": [
+            {
+              "name": "Bone",
+              "itemId": 182
+            },
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            }
+          ]
+        },
+        {
+          "area": "Área 9",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実*3",
+          "pointCount": 3,
+          "items": [
+            {
+              "name": "Huskberry",
+              "itemId": 127
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            },
+            {
+              "name": "Spider Web",
+              "itemId": 184
+            }
+          ]
+        },
+        {
+          "area": "Área 10",
+          "rank": "Low",
+          "type": "Suelo especial",
+          "sourceType": "白い土",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Worm",
+              "itemId": 189
+            },
+            {
+              "name": "Frog",
+              "itemId": 192
+            }
+          ]
+        },
+        {
+          "area": "Área 11",
+          "rank": "Low",
+          "type": "Huesos",
+          "sourceType": "骨",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Red Coral Stone",
+              "itemId": 398
+            },
+            {
+              "name": "Broken Shell",
+              "itemId": 147
+            },
+            {
+              "name": "Stone",
+              "itemId": 95
+            }
+          ]
+        },
+        {
+          "area": "Área 12",
+          "rank": "Low",
+          "type": "Huesos",
+          "sourceType": "骨",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Bone",
+              "itemId": 182
+            },
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            }
+          ]
+        },
+        {
+          "area": "Campamento",
+          "rank": "High",
+          "type": "Pesca",
+          "sourceType": "釣り",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 1",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 2",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実*2",
+          "pointCount": 2,
+          "items": []
+        },
+        {
+          "area": "Área 3",
+          "rank": "High",
+          "type": "Hongos",
+          "sourceType": "キノコ",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 4",
+          "rank": "High",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 5",
+          "rank": "High",
+          "type": "Huesos",
+          "sourceType": "骨",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 6",
+          "rank": "High",
+          "type": "Hongos",
+          "sourceType": "キノコ",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 7",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 8",
+          "rank": "High",
+          "type": "Huesos",
+          "sourceType": "骨*2",
+          "pointCount": 2,
+          "items": [
+            {
+              "name": "Club Bone"
+            }
+          ]
+        },
+        {
+          "area": "Área 9",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実*3",
+          "pointCount": 3,
+          "items": []
+        },
+        {
+          "area": "Área 10",
+          "rank": "High",
+          "type": "Suelo especial",
+          "sourceType": "白い土",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 11",
+          "rank": "High",
+          "type": "Huesos",
+          "sourceType": "骨",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Red Coral Stone",
+              "itemId": 398
+            },
+            {
+              "name": "Broken Shell",
+              "itemId": 147
+            }
+          ]
+        },
+        {
+          "area": "Área 12",
+          "rank": "High",
+          "type": "Huesos",
+          "sourceType": "骨",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "秘境",
+          "rank": "High",
+          "type": "Minería",
+          "sourceType": "採掘",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Rustshard",
+              "itemId": 108
+            },
+            {
+              "name": "Carbalite Ore",
+              "itemId": 101
+            },
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Machalite Ore",
+              "itemId": 99
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Shining Charm",
+              "itemId": 407
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sandy-plains",
+      "name": "Llanos Arenosos",
+      "sourceName": "Sandy Plains",
+      "kind": "quest-map",
+      "sourceUrl": "https://game.daihouko.com/mh/3/93.html",
+      "nodes": [
+        {
+          "area": "Área 1",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Paintberry",
+              "itemId": 125
+            },
+            {
+              "name": "Bomberry",
+              "itemId": 129
+            },
+            {
+              "name": "Fire Herb",
+              "itemId": 123
+            },
+            {
+              "name": "Ivy",
+              "itemId": 130
+            },
+            {
+              "name": "Firedouse Berry",
+              "itemId": 359
+            }
+          ]
+        },
+        {
+          "area": "Área 2",
+          "rank": "Low",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Cricket",
+              "itemId": 188
+            },
+            {
+              "name": "Gluehopper",
+              "itemId": 116
+            },
+            {
+              "name": "Thunderbug",
+              "itemId": 115
+            },
+            {
+              "name": "Bitterbug",
+              "itemId": 113
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 3",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Fire Herb",
+              "itemId": 123
+            },
+            {
+              "name": "Cactus Flower",
+              "itemId": 134
+            },
+            {
+              "name": "Felvine",
+              "itemId": 534
+            },
+            {
+              "name": "Ivy",
+              "itemId": 130
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Low",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Firefly",
+              "itemId": 190
+            },
+            {
+              "name": "Gluehopper",
+              "itemId": 116
+            },
+            {
+              "name": "Thunderbug",
+              "itemId": 115
+            },
+            {
+              "name": "Bitterbug",
+              "itemId": 113
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            },
+            {
+              "name": "Royal Rhino",
+              "itemId": 119
+            }
+          ]
+        },
+        {
+          "area": "Área 5",
+          "rank": "Low",
+          "type": "Huesos",
+          "sourceType": "骨",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Monster Bone S",
+              "itemId": 149
+            },
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            },
+            {
+              "name": "Bone",
+              "itemId": 182
+            }
+          ]
+        },
+        {
+          "area": "Área 6",
+          "rank": "Low",
+          "type": "Hongos",
+          "sourceType": "キノコ*3",
+          "pointCount": 3,
+          "items": [
+            {
+              "name": "Unique Mushroom",
+              "itemId": 141
+            },
+            {
+              "name": "Choice Mushroom",
+              "itemId": 140
+            },
+            {
+              "name": "Nitroshroom",
+              "itemId": 144
+            }
+          ]
+        },
+        {
+          "area": "Área 7",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Cactus Flower",
+              "itemId": 134
+            },
+            {
+              "name": "Felvine",
+              "itemId": 534
+            },
+            {
+              "name": "Herb",
+              "itemId": 120
+            },
+            {
+              "name": "Worm",
+              "itemId": 189
+            },
+            {
+              "name": "Ivy",
+              "itemId": 130
+            }
+          ]
+        },
+        {
+          "area": "Área 8",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Paintberry",
+              "itemId": 125
+            },
+            {
+              "name": "Bomberry",
+              "itemId": 129
+            },
+            {
+              "name": "Fire Herb",
+              "itemId": 123
+            },
+            {
+              "name": "Ivy",
+              "itemId": 130
+            },
+            {
+              "name": "Firedouse Berry",
+              "itemId": 359
+            }
+          ]
+        },
+        {
+          "area": "Área 9",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Fire Herb",
+              "itemId": 123
+            },
+            {
+              "name": "Cactus Flower",
+              "itemId": 134
+            },
+            {
+              "name": "Felvine",
+              "itemId": 534
+            },
+            {
+              "name": "Ivy",
+              "itemId": 130
+            }
+          ]
+        },
+        {
+          "area": "Área 10",
+          "rank": "Low",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Cricket",
+              "itemId": 188
+            },
+            {
+              "name": "Gluehopper",
+              "itemId": 116
+            },
+            {
+              "name": "Thunderbug",
+              "itemId": 115
+            },
+            {
+              "name": "Bitterbug",
+              "itemId": 113
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 11",
+          "rank": "Low",
+          "type": "Minería",
+          "sourceType": "鉱石",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Crystal Bone",
+              "itemId": 364
+            },
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Golden Bone",
+              "itemId": 365
+            }
+          ]
+        },
+        {
+          "area": "Área 1",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 2",
+          "rank": "High",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 3",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 4",
+          "rank": "High",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 5",
+          "rank": "High",
+          "type": "Huesos",
+          "sourceType": "骨",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 6",
+          "rank": "High",
+          "type": "Hongos",
+          "sourceType": "キノコ*3",
+          "pointCount": 3,
+          "items": []
+        },
+        {
+          "area": "Área 7",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 8",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 9",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 10",
+          "rank": "High",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 11",
+          "rank": "High",
+          "type": "Minería",
+          "sourceType": "鉱石",
+          "pointCount": 1,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "flooded-forest",
+      "name": "Bosque Inundado",
+      "sourceName": "Flooded Forest",
+      "kind": "quest-map",
+      "sourceUrl": "https://game.daihouko.com/mh/3/94.html",
+      "nodes": [
+        {
+          "area": "Campamento",
+          "rank": "Low",
+          "type": "Pesca",
+          "sourceType": "釣り",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Whetfish",
+              "itemId": 193
+            },
+            {
+              "name": "Pin Tuna",
+              "itemId": 195
+            },
+            {
+              "name": "Burst Arowana",
+              "itemId": 198
+            },
+            {
+              "name": "Bomb Arowana",
+              "itemId": 199
+            },
+            {
+              "name": "Small Goldenfish",
+              "itemId": 202
+            }
+          ]
+        },
+        {
+          "area": "Área 1",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Airweed",
+              "itemId": 135
+            },
+            {
+              "name": "Sap Plant",
+              "itemId": 124
+            },
+            {
+              "name": "Paintberry",
+              "itemId": 125
+            },
+            {
+              "name": "Herb",
+              "itemId": 120
+            }
+          ]
+        },
+        {
+          "area": "Área 2",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実*2",
+          "pointCount": 2,
+          "items": [
+            {
+              "name": "Huskberry",
+              "itemId": 127
+            },
+            {
+              "name": "Needleberry",
+              "itemId": 126
+            },
+            {
+              "name": "Waterblock Seed",
+              "itemId": 360
+            },
+            {
+              "name": "Adamant Seed",
+              "itemId": 132
+            }
+          ]
+        },
+        {
+          "area": "Área 3",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実*2",
+          "pointCount": 2,
+          "items": [
+            {
+              "name": "Sap Plant",
+              "itemId": 124
+            },
+            {
+              "name": "Ivy",
+              "itemId": 130
+            },
+            {
+              "name": "Airweed",
+              "itemId": 135
+            },
+            {
+              "name": "Antidote Herb",
+              "itemId": 121
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Airweed",
+              "itemId": 135
+            },
+            {
+              "name": "Sap Plant",
+              "itemId": 124
+            },
+            {
+              "name": "Herb",
+              "itemId": 120
+            },
+            {
+              "name": "Paintberry",
+              "itemId": 125
+            }
+          ]
+        },
+        {
+          "area": "Área 5",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Airweed",
+              "itemId": 135
+            },
+            {
+              "name": "Sap Plant",
+              "itemId": 124
+            },
+            {
+              "name": "Paintberry",
+              "itemId": 125
+            },
+            {
+              "name": "Herb",
+              "itemId": 120
+            }
+          ]
+        },
+        {
+          "area": "Área 6",
+          "rank": "Low",
+          "type": "Minería",
+          "sourceType": "鉱石*2",
+          "pointCount": 2,
+          "items": [
+            {
+              "name": "Pelagicite Ore",
+              "itemId": 102
+            },
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            },
+            {
+              "name": "Stone",
+              "itemId": 95
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Machalite Ore",
+              "itemId": 99
+            }
+          ]
+        },
+        {
+          "area": "Área 7",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Paintberry",
+              "itemId": 125
+            },
+            {
+              "name": "Waterblock Seed",
+              "itemId": 360
+            },
+            {
+              "name": "Needleberry",
+              "itemId": 126
+            }
+          ]
+        },
+        {
+          "area": "Área 8",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Airweed",
+              "itemId": 135
+            },
+            {
+              "name": "Sap Plant",
+              "itemId": 124
+            },
+            {
+              "name": "Paintberry",
+              "itemId": 125
+            },
+            {
+              "name": "Herb",
+              "itemId": 120
+            }
+          ]
+        },
+        {
+          "area": "Área 9",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Worm",
+              "itemId": 189
+            },
+            {
+              "name": "Fire Herb",
+              "itemId": 123
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Área 10",
+          "rank": "Low",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Royal Rhino",
+              "itemId": 119
+            },
+            {
+              "name": "Flashbug",
+              "itemId": 114
+            },
+            {
+              "name": "Bitterbug",
+              "itemId": 113
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            }
+          ]
+        },
+        {
+          "area": "Campamento",
+          "rank": "High",
+          "type": "Pesca",
+          "sourceType": "釣り",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 1",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 2",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実*2",
+          "pointCount": 2,
+          "items": []
+        },
+        {
+          "area": "Área 3",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実*2",
+          "pointCount": 2,
+          "items": []
+        },
+        {
+          "area": "Área 4",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 5",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 6",
+          "rank": "High",
+          "type": "Minería",
+          "sourceType": "鉱石*2",
+          "pointCount": 2,
+          "items": [
+            {
+              "name": "Bloodrun Jewel",
+              "itemId": 415
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Bathycite Ore",
+              "itemId": 103
+            },
+            {
+              "name": "Carbalite Ore",
+              "itemId": 101
+            }
+          ]
+        },
+        {
+          "area": "Área 7",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 8",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 9",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 10",
+          "rank": "High",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "秘境",
+          "rank": "High",
+          "type": "Minería",
+          "sourceType": "鉱石",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Bathycite Ore",
+              "itemId": 103
+            },
+            {
+              "name": "Bloodrun Jewel",
+              "itemId": 415
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "volcano",
+      "name": "Volcán",
+      "sourceName": "Volcano",
+      "kind": "quest-map",
+      "sourceUrl": "https://game.daihouko.com/mh/3/95.html",
+      "nodes": [
+        {
+          "area": "Área 1",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Might Seed",
+              "itemId": 131
+            },
+            {
+              "name": "Bomberry",
+              "itemId": 129
+            },
+            {
+              "name": "Needleberry",
+              "itemId": 126
+            }
+          ]
+        },
+        {
+          "area": "Área 2",
+          "rank": "Low",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Worm",
+              "itemId": 189
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            },
+            {
+              "name": "Killer Beetle",
+              "itemId": 117
+            },
+            {
+              "name": "Rare Scarab",
+              "itemId": 118
+            },
+            {
+              "name": "Flashbug",
+              "itemId": 114
+            }
+          ]
+        },
+        {
+          "area": "Área 3",
+          "rank": "Low",
+          "type": "Minería",
+          "sourceType": "鉱石",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Stone",
+              "itemId": 95
+            },
+            {
+              "name": "Armor Sphere",
+              "itemId": 300
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Whetstone",
+              "itemId": 96
+            },
+            {
+              "name": "Firestone",
+              "itemId": 104
+            },
+            {
+              "name": "Dragonite Ore",
+              "itemId": 100
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Low",
+          "type": "Pesca",
+          "sourceType": "釣り",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Glutton Tuna",
+              "itemId": 200
+            },
+            {
+              "name": "Bomb Arowana",
+              "itemId": 199
+            },
+            {
+              "name": "Scatterfish",
+              "itemId": 201
+            },
+            {
+              "name": "Sushifish",
+              "itemId": 194
+            },
+            {
+              "name": "Pin Tuna",
+              "itemId": 195
+            }
+          ]
+        },
+        {
+          "area": "Área 5",
+          "rank": "Low",
+          "type": "Minería",
+          "sourceType": "鉱石",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Machalite Ore",
+              "itemId": 99
+            },
+            {
+              "name": "Dragonite Ore",
+              "itemId": 100
+            },
+            {
+              "name": "Armor Sphere+",
+              "itemId": 301
+            },
+            {
+              "name": "Adv Armor Sphere",
+              "itemId": 410
+            }
+          ]
+        },
+        {
+          "area": "Área 6",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Adamant Seed",
+              "itemId": 132
+            },
+            {
+              "name": "Might Seed",
+              "itemId": 131
+            },
+            {
+              "name": "Dragonfell Berry",
+              "itemId": 341
+            }
+          ]
+        },
+        {
+          "area": "Área 7",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Herb",
+              "itemId": 120
+            },
+            {
+              "name": "Fire Herb",
+              "itemId": 123
+            },
+            {
+              "name": "Antidote Herb",
+              "itemId": 121
+            },
+            {
+              "name": "Sap Plant",
+              "itemId": 124
+            }
+          ]
+        },
+        {
+          "area": "Área 8",
+          "rank": "Low",
+          "type": "Minería",
+          "sourceType": "鉱石",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Iron Ore",
+              "itemId": 97
+            },
+            {
+              "name": "Dragonite Ore",
+              "itemId": 100
+            },
+            {
+              "name": "Armor Sphere+",
+              "itemId": 301
+            },
+            {
+              "name": "Firestone",
+              "itemId": 104
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            }
+          ]
+        },
+        {
+          "area": "Área 9",
+          "rank": "Low",
+          "type": "Minería",
+          "sourceType": "鉱石",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Machalite Ore",
+              "itemId": 99
+            },
+            {
+              "name": "Dragonite Ore",
+              "itemId": 100
+            },
+            {
+              "name": "Firestone",
+              "itemId": 104
+            },
+            {
+              "name": "Mystery Charm",
+              "itemId": 406
+            }
+          ]
+        },
+        {
+          "area": "Área 10",
+          "rank": "Low",
+          "type": "Minería",
+          "sourceType": "鉱石",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Sunspire Jewel",
+              "itemId": 414
+            },
+            {
+              "name": "Aquaglow Jewel",
+              "itemId": 413
+            },
+            {
+              "name": "Armor Sphere+",
+              "itemId": 301
+            },
+            {
+              "name": "Firestone",
+              "itemId": 104
+            },
+            {
+              "name": "Adv Armor Sphere",
+              "itemId": 410
+            }
+          ]
+        },
+        {
+          "area": "Área 1",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 2",
+          "rank": "High",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Rare Scarab",
+              "itemId": 118
+            },
+            {
+              "name": "Flashbug",
+              "itemId": 114
+            }
+          ]
+        },
+        {
+          "area": "Área 3",
+          "rank": "High",
+          "type": "Minería",
+          "sourceType": "鉱石",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Rustshard",
+              "itemId": 108
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "High",
+          "type": "Pesca",
+          "sourceType": "釣り",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 5",
+          "rank": "High",
+          "type": "Minería",
+          "sourceType": "鉱石",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Rustshard",
+              "itemId": 108
+            },
+            {
+              "name": "Hrd Armor Sphere",
+              "itemId": 411
+            },
+            {
+              "name": "Adv Armor Sphere",
+              "itemId": 410
+            }
+          ]
+        },
+        {
+          "area": "Área 6",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 7",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 8",
+          "rank": "High",
+          "type": "Minería",
+          "sourceType": "鉱石",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            },
+            {
+              "name": "Firestone",
+              "itemId": 104
+            },
+            {
+              "name": "Carbalite Ore",
+              "itemId": 101
+            },
+            {
+              "name": "Dragonite Ore",
+              "itemId": 100
+            }
+          ]
+        },
+        {
+          "area": "Área 9",
+          "rank": "High",
+          "type": "Minería",
+          "sourceType": "鉱石",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Carbalite Ore",
+              "itemId": 101
+            },
+            {
+              "name": "Dragonite Ore",
+              "itemId": 100
+            },
+            {
+              "name": "Firestone",
+              "itemId": 104
+            },
+            {
+              "name": "Firecell Stone",
+              "itemId": 475
+            },
+            {
+              "name": "Timeworn Charm",
+              "itemId": 408
+            },
+            {
+              "name": "Rustshard",
+              "itemId": 108
+            },
+            {
+              "name": "Ancient Shard",
+              "itemId": 109
+            },
+            {
+              "name": "Hrd Armor Sphere",
+              "itemId": 411
+            },
+            {
+              "name": "Shining Charm",
+              "itemId": 407
+            }
+          ]
+        },
+        {
+          "area": "Área 10",
+          "rank": "High",
+          "type": "Minería",
+          "sourceType": "鉱石",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Firestone",
+              "itemId": 104
+            },
+            {
+              "name": "Carbalite Ore",
+              "itemId": 101
+            },
+            {
+              "name": "Firecell Stone",
+              "itemId": 475
+            },
+            {
+              "name": "Earth Crystal",
+              "itemId": 98
+            }
+          ]
+        },
+        {
+          "area": "秘境",
+          "rank": "High",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Hercudrome",
+              "itemId": 153
+            },
+            {
+              "name": "Rare Scarab",
+              "itemId": 118
+            },
+            {
+              "name": "Killer Beetle",
+              "itemId": 117
+            },
+            {
+              "name": "Thunderbug",
+              "itemId": 115
+            },
+            {
+              "name": "Godbug",
+              "itemId": 112
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tundra",
+      "name": "Tundra",
+      "sourceName": "Tundra",
+      "kind": "quest-map",
+      "sourceUrl": "https://game.daihouko.com/mh/3/96.html",
+      "nodes": [
+        {
+          "area": "Campamento",
+          "rank": "Low",
+          "type": "Pesca",
+          "sourceType": "釣り",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Sleepyfish",
+              "itemId": 197
+            },
+            {
+              "name": "Burst Arowana",
+              "itemId": 198
+            },
+            {
+              "name": "Whetfish",
+              "itemId": 193
+            },
+            {
+              "name": "Pin Tuna",
+              "itemId": 195
+            },
+            {
+              "name": "Small Goldenfish",
+              "itemId": 202
+            }
+          ]
+        },
+        {
+          "area": "Área 1",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Might Seed",
+              "itemId": 131
+            },
+            {
+              "name": "Bomberry",
+              "itemId": 129
+            },
+            {
+              "name": "Paintberry",
+              "itemId": 125
+            },
+            {
+              "name": "Stormsender Seed",
+              "itemId": 362
+            },
+            {
+              "name": "Ice Crystal",
+              "itemId": 105
+            },
+            {
+              "name": "Adamant Seed",
+              "itemId": 132
+            }
+          ]
+        },
+        {
+          "area": "Área 3",
+          "rank": "Low",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Godbug",
+              "itemId": 112
+            },
+            {
+              "name": "Thunderbug",
+              "itemId": 115
+            },
+            {
+              "name": "Bitterbug",
+              "itemId": 113
+            },
+            {
+              "name": "Flashbug",
+              "itemId": 114
+            },
+            {
+              "name": "Insect Husk",
+              "itemId": 181
+            },
+            {
+              "name": "Killer Beetle",
+              "itemId": 117
+            },
+            {
+              "name": "Worm",
+              "itemId": 189
+            }
+          ]
+        },
+        {
+          "area": "Área 4",
+          "rank": "Low",
+          "type": "Huesos",
+          "sourceType": "骨",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            },
+            {
+              "name": "Bone",
+              "itemId": 182
+            },
+            {
+              "name": "Monster Bone S",
+              "itemId": 149
+            },
+            {
+              "name": "Monster Bone M",
+              "itemId": 150
+            },
+            {
+              "name": "Golden Bone",
+              "itemId": 365
+            },
+            {
+              "name": "Unknown Skull",
+              "itemId": 137
+            }
+          ]
+        },
+        {
+          "area": "Área 5",
+          "rank": "Low",
+          "type": "Huesos",
+          "sourceType": "骨",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Bone Husk S",
+              "itemId": 315
+            },
+            {
+              "name": "Bone Husk L",
+              "itemId": 316
+            },
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            },
+            {
+              "name": "Golden Bone",
+              "itemId": 365
+            }
+          ]
+        },
+        {
+          "area": "Área 6",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Bomberry",
+              "itemId": 129
+            },
+            {
+              "name": "Stormsender Seed",
+              "itemId": 362
+            },
+            {
+              "name": "Huskberry",
+              "itemId": 127
+            }
+          ]
+        },
+        {
+          "area": "Área 7",
+          "rank": "Low",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Paintberry",
+              "itemId": 125
+            },
+            {
+              "name": "Adamant Seed",
+              "itemId": 132
+            },
+            {
+              "name": "Stormsender Seed",
+              "itemId": 362
+            }
+          ]
+        },
+        {
+          "area": "Campamento",
+          "rank": "High",
+          "type": "Pesca",
+          "sourceType": "釣り",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Pin Tuna",
+              "itemId": 195
+            }
+          ]
+        },
+        {
+          "area": "Área 1",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 3",
+          "rank": "High",
+          "type": "Insectos",
+          "sourceType": "虫",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 4",
+          "rank": "High",
+          "type": "Huesos",
+          "sourceType": "骨",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 5",
+          "rank": "High",
+          "type": "Huesos",
+          "sourceType": "骨",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Bone Husk S",
+              "itemId": 315
+            },
+            {
+              "name": "Bone Husk L",
+              "itemId": 316
+            },
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            },
+            {
+              "name": "Golden Bone",
+              "itemId": 365
+            }
+          ]
+        },
+        {
+          "area": "Área 6",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "Área 7",
+          "rank": "High",
+          "type": "Plantas y bayas",
+          "sourceType": "草・実",
+          "pointCount": 1,
+          "items": []
+        },
+        {
+          "area": "秘境",
+          "rank": "High",
+          "type": "Huesos",
+          "sourceType": "骨",
+          "pointCount": 1,
+          "items": [
+            {
+              "name": "Bone Husk S",
+              "itemId": 315
+            },
+            {
+              "name": "Bone Husk L",
+              "itemId": 316
+            },
+            {
+              "name": "Dragonbone Relic",
+              "itemId": 148
+            },
+            {
+              "name": "Golden Bone",
+              "itemId": 365
+            },
+            {
+              "name": "Mystery Bone",
+              "itemId": 245
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

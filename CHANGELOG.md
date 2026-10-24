@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0 · guía de recolección y referencias visuales
+
+- Add a searchable gathering guide for Moga Woods and all five quest maps, with 171 area-specific nodes and 480 item/node results from the cited MH3 guide.
+- Filter gathering points by material, map, area, rank and point type; link each material back to its full source list and open the guide without loading a save.
+- Restore nodes previously missed by the importer, including three-point groups, mining aliases and the Sandy Plains special-soil point; make the importer reject incomplete map coverage.
+- Add optional monster icons and armor-set reference images from Monster Hunter Wiki; retain usable initials/placeholders when a remote image is unavailable and keep images out of the installer.
+- Add a source link handler restricted to the HTTPS hosts used by the gathering and image references.
+- Label quest secondary-reward tables with their full result count and keep every outcome visible.
+
 ## 0.5.0 · actualización grande
 
 - Mostrar todos los resultados de cada tabla secundaria de misión como fichas separadas, quitar el recorte a cuatro entradas y abrir la guía del material al seleccionarlo.

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, Menu, shell } = require('electron');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -156,6 +156,20 @@ ipcMain.handle('save:choose-candidate', async (_event, index) => {
   pendingSaveCandidates = [];
   if (!candidate) return { error: 'La carpeta seleccionada ya no está disponible. Vuelve a buscar las saves.' };
   return { folder: candidate.folder, ...readSaveFiles(candidate.files) };
+});
+
+const EXTERNAL_SOURCE_HOSTS = new Set(['game.daihouko.com', 'monsterhunter.fandom.com']);
+ipcMain.handle('external:open', async (_event, value) => {
+  try {
+    const url = new URL(String(value));
+    if (url.protocol !== 'https:' || !EXTERNAL_SOURCE_HOSTS.has(url.hostname)) {
+      return { error: 'Este enlace no pertenece a una fuente de datos permitida.' };
+    }
+    await shell.openExternal(url.href);
+    return { opened: true };
+  } catch {
+    return { error: 'No se pudo abrir la fuente.' };
+  }
 });
 
 app.whenReady().then(() => {

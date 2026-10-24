@@ -4,4 +4,8 @@
 
 The catalog is checked into the repository so a normal build does not need network access to generate game data. Run `npm run build:data` to emit the browser/Electron bundle `data.js` from this JSON source. Maintainers with dependencies installed can refresh the upstream snapshot using `npm run sync:data`, then rebuild it.
 
+`gathering-catalog.json` is a separate, checked-in snapshot of the community Monster Hunter 3 (Wii) gathering tables at https://game.daihouko.com/mh/3/ (Moga free roam, pages 74 and 92–96 for quest maps). It records area, point type, repeated point count, available item outcomes, and Moga quantity ranges. Names are cross-referenced with the MH3 item list at https://monsterhunter.fandom.com/wiki/MH3:_Item_List. It does not invent per-node coordinates or outcome probabilities. Run `python tools/import-gathering-data.py` to refresh the snapshot; the importer verifies expected point counts before replacing it. `npm run build:data` embeds this checked-in snapshot without network access.
+
+Monster icons and armor reference images are loaded at runtime from Monster Hunter Wiki (Fandom) and are not included in the application package. Their availability depends on a network connection and the source hosting the files; the UI keeps a text placeholder when an image cannot load.
+
 Do not add personal save files or character data to this directory.
