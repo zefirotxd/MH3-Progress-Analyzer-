@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0-preview.6 · compilación local
+
+- Add local progress checkpoints with RC, HRP, zenny, completed-quest flags and item-box counts; never store raw save files.
+- Compare the currently loaded hunter against a checkpoint, including newly changed quest flags and net item-box differences.
+- Keep up to 12 checkpoints per save record, isolate them with a local folder fingerprint plus save file, slot and raw record ID, and allow individual deletion.
+- Clearly label item changes as net differences rather than inferred acquisition or use history.
+- Save up to 20 named armor builds locally, reload them into the simulator, delete them, or open their validated share code.
+
 ## 0.3.0-preview.5 · compilación local
 
 - Add versioned share codes for armor sets and decorations, with validation against the local armor style, piece slots and decoration catalog before import.

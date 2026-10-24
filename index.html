@@ -34,6 +34,7 @@
         <button class="nav-item" data-view="hunts"><span class="nav-icon">◈</span>Monstruos</button>
         <button class="nav-item" data-view="materials"><span class="nav-icon">▦</span>Materiales</button>
         <button class="nav-item" data-view="save"><span class="nav-icon">⌕</span>Inspector de save</button>
+        <button class="nav-item" data-view="history"><span class="nav-icon">↔</span>Historial</button>
         <button class="nav-item" data-view="sets"><span class="nav-icon">⚒</span>Armar set</button>
       </nav>
 
@@ -139,19 +140,36 @@
           <div id="saveInspector"></div>
         </section>
 
+        <section class="view" id="view-history">
+          <div class="section-intro"><div><div class="eyebrow">PUNTOS DE CONTROL LOCALES</div><h2>Compara el progreso</h2></div><p>Guarda una lectura resumida y compárala con el save actual después de jugar. La app almacena solo campos decodificados; nunca conserva los archivos data00–data05.</p></div>
+          <article class="panel history-capture">
+            <div class="panel-heading"><div><h3>Guardar el estado actual</h3><div class="panel-subtitle">Elige un nombre fácil de reconocer, por ejemplo “Antes de subir a RC 3”.</div></div><span class="tag good">Solo lectura</span></div>
+            <div class="history-capture-controls"><label for="snapshotLabel">Nombre del punto de control<input id="snapshotLabel" type="text" maxlength="64" placeholder="Ej.: Antes de la urgente"></label><button class="button button-primary" id="saveSnapshot" type="button">Guardar punto de control</button></div>
+            <p class="small-note">Se guardan RC, HRP, zenny, misiones marcadas y cantidades del baúl. Se conservan hasta 12 puntos por cazador en este equipo; puedes borrar cada uno cuando quieras.</p>
+          </article>
+          <article class="panel history-comparison" id="historyComparison"></article>
+          <article class="panel history-list-panel" id="historyList"></article>
+        </section>
+
         <section class="view" id="view-sets">
           <div class="section-intro"><div><div class="eyebrow">PLANIFICADOR DE EQUIPO</div><h2>Arma un set y revisa sus habilidades</h2></div><p>Este simulador es independiente del save. Elige cinco piezas para estimar defensa, resistencias, ranuras y habilidades activadas.</p></div>
           <div class="set-controls panel">
             <div class="style-switch"><span>Tipo de armadura</span><button class="style-button active" data-style="blade">Espadachín</button><button class="style-button" data-style="gunner">Artillero</button></div>
             <div class="set-actions"><button class="button button-secondary" id="shareSet" type="button">Compartir código</button><button class="button button-secondary" id="clearSet" type="button">Limpiar set</button></div>
           </div>
+          <article class="panel set-presets-panel">
+            <div class="panel-heading"><div><h3>Mis sets guardados</h3><div class="panel-subtitle">Guarda configuraciones locales para retomarlas, compararlas en el simulador o compartirlas con un código.</div></div><span id="savedSetCount" class="tag">0 / 20</span></div>
+            <div class="set-preset-save"><label for="setPresetName">Nombre del set<input id="setPresetName" type="text" maxlength="48" placeholder="Ej.: Rathalos · ataque"></label><button class="button button-primary" id="saveSetPreset" type="button">Guardar set actual</button></div>
+            <div id="savedSetList" class="saved-set-list"></div>
+            <p class="small-note">Se guardan las piezas y joyas elegidas, no datos de tu partida. Los sets permanecen en este equipo hasta que los borres.</p>
+          </article>
           <div class="set-builder" id="setBuilder"></div>
           <div class="set-results" id="setResults"></div>
           <p class="small-note">La vista combina estadísticas, joyas colocadas en los espacios de cada pieza y Torso Up. No incluye mejoras ni amuletos; las recetas de armadura no están disponibles en la fuente de datos incluida.</p>
         </section>
       </div>
 
-      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.3.0-preview.5</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
+      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.3.0-preview.6</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
     </main>
   </div>
   <dialog id="saveCandidateDialog" class="save-candidate-dialog">

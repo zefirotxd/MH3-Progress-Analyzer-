@@ -15,6 +15,8 @@
 - Add decorations to armor pieces, enforce each piece's slot budget and include their skill points in the set summary.
 - Apply stacked `Torso Up` to chest armor and decorations in the armor skill simulation.
 - Export/import versioned share codes for armor pieces and decorations; validate armor style, piece IDs and jewel slot usage before applying a code.
+- Save local read-only progress checkpoints and compare rank, HRP, zenny, quest flags and item-box counts without retaining raw save bytes.
+- Save, reload, remove and share up to 20 named armor-set presets locally; revalidate their pieces and jewel slots against the current catalog.
 - Keep upstream data snapshots committed so app builds remain offline; provide a separate maintainer sync command.
 
 ## Next improvements, ordered by user value and evidence
@@ -33,7 +35,7 @@
 
 ### 3. Learn the save format safely
 
-- Add a local before/after save comparison that reports changed byte ranges without uploading or modifying either file.
+- Add a byte-level before/after inspector for controlled save-format research, separate from the decoded progress checkpoint comparison.
 - Decode equipment, pouch items, Moga points, farm state, requests and Cha-Cha state only after offsets pass controlled before/after checks and a known-game comparison.
 - Add synthetic regression fixtures for file flags, checksums, slots and each confirmed field. Never check in the user's personal save.
 - Document region/version differences and clearly separate “confirmed”, “inferred” and “not decoded” fields.
@@ -41,7 +43,7 @@
 ### 4. Make repeated use easier
 
 - Remember only the last selected folder and offer a refresh action; never persist save bytes.
-- Add a recent hunters list and compare two loaded snapshots without treating completion flags as lifetime hunt counts.
+- Add a recent hunters list only after a stable, validated hunter identity can be decoded from the save.
 - Improve Spanish names/search aliases for items, monsters and quests while preserving the upstream English name for cross-reference.
 - Add keyboard navigation and a clearer diagnostic summary for partial or invalid six-file selections.
 

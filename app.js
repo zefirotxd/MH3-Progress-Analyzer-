@@ -51,6 +51,11 @@
   const WEAPON_CLASS_ORDER = ['Great Sword', 'Longsword', 'Sword and Shield', 'Hammer', 'Lance', 'Switch Axe'];
   const WEAPON_CLASSES = WEAPON_CLASS_ORDER.filter((type) => (DATA.weapons || []).some((weapon) => weapon.type === type));
   const WEAPON_SHOPPING_STORAGE_KEY = 'mh3-progress-analyzer.weapon-shopping.v1';
+  const PROGRESS_SNAPSHOT_STORAGE_KEY = 'mh3-progress-analyzer.progress-snapshots.v1';
+  const SET_PRESET_STORAGE_KEY = 'mh3-progress-analyzer.saved-sets.v1';
+  const MAX_PROGRESS_SNAPSHOTS_PER_PROFILE = 12;
+  const MAX_PROGRESS_SNAPSHOTS_TOTAL = 60;
+  const MAX_SAVED_SET_PRESETS = 20;
   const WEAPON_CLASS_NAMES = {
     'Great Sword': 'Espada grande', Longsword: 'Espada larga', 'Sword and Shield': 'Espada y escudo',
     Hammer: 'Martillo', Lance: 'Lanza', 'Switch Axe': 'Hacha espada',
@@ -203,7 +208,7 @@
   function forgeGoalKey(type, targetId, startId, weaponIds) {
     return `${type}:${targetId}:${startId ?? 'new'}:${weaponIds.join('>')}`;
   }
-  const appState = { profiles: [], files: [], selected: 0, view: 'dashboard', monsterSearch: '', itemSearch: '', questSearch: '', questRegion: 'all', questRank: 'all', questGoal: 'all', questProgression: 'all', questStatus: 'all', armorStyle: 'blade', set: {}, decorations: {}, weaponClass: WEAPON_CLASSES[0] || '', weaponTarget: '', weaponStart: '', weaponRoute: 0, weaponShoppingList: loadWeaponShoppingList() };
+  const appState = { profiles: [], files: [], selected: 0, view: 'dashboard', monsterSearch: '', itemSearch: '', questSearch: '', questRegion: 'all', questRank: 'all', questGoal: 'all', questProgression: 'all', questStatus: 'all', armorStyle: 'blade', set: {}, decorations: {}, weaponClass: WEAPON_CLASSES[0] || '', weaponTarget: '', weaponStart: '', weaponRoute: 0, weaponShoppingList: loadWeaponShoppingList(), progressSnapshots: [], historyBaselineId: '', savedSetPresets: [] };
   const rankThreshold = (rank) => {
     const target = Math.max(0, Math.floor(rank));
     if (target === 0) return 0;
@@ -222,6 +227,79 @@
   const clearStatus = (profile, id) => profile.completed.has(id);
   const safeStorageGet = (key) => { try { return localStorage.getItem(key); } catch { return null; } };
   const safeStorageSet = (key, value) => { try { localStorage.setItem(key, value); } catch { /* los checks siguen funcionando solo durante esta sesión */ } };
+
+  function validProgressSnapshot(snapshot) {
+    return snapshot?.version === 1
+      && typeof snapshot.id === 'string' && snapshot.id.length <= 80
+      && typeof snapshot.label === 'string' && snapshot.label.length <= 64
+      && typeof snapshot.capturedAt === 'string' && Number.isFinite(Date.parse(snapshot.capturedAt))
+      && typeof snapshot.sourceId === 'string' && snapshot.sourceId.length <= 128
+      && /^data0[0-5]$/i.test(snapshot.fileName)
+      && Number.isInteger(snapshot.slot) && snapshot.slot >= 0 && snapshot.slot < 3
+      && Number.isInteger(snapshot.characterId) && snapshot.characterId >= 0 && snapshot.characterId <= 0xffffffff
+      && Number.isInteger(snapshot.rank) && snapshot.rank >= 0 && snapshot.rank <= 0xffff
+      && Number.isInteger(snapshot.points) && snapshot.points >= 0 && snapshot.points <= 0xffffffff
+      && Number.isInteger(snapshot.zenny) && snapshot.zenny >= -0x80000000 && snapshot.zenny <= 0x7fffffff
+      && Array.isArray(snapshot.completed) && snapshot.completed.length <= 512
+      && snapshot.completed.every((id) => Number.isInteger(id) && id >= 0 && id <= 0xffff)
+      && Array.isArray(snapshot.items) && snapshot.items.length <= ITEM_BOX_SLOTS
+      && snapshot.items.every((entry) => Array.isArray(entry) && entry.length === 2
+        && Number.isInteger(entry[0]) && entry[0] >= 0 && entry[0] <= 0xffff
+        && Number.isInteger(entry[1]) && entry[1] > 0 && entry[1] <= ITEM_BOX_SLOTS * 0x7fff);
+  }
+
+  function persistProgressSnapshots(snapshots) {
+    try {
+      localStorage.setItem(PROGRESS_SNAPSHOT_STORAGE_KEY, JSON.stringify(snapshots));
+      return true;
+    } catch (error) {
+      console.warn('No se pudo guardar el historial local de progreso', error);
+      return false;
+    }
+  }
+
+  function loadProgressSnapshots() {
+    try {
+      const parsed = JSON.parse(safeStorageGet(PROGRESS_SNAPSHOT_STORAGE_KEY) || '[]');
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(validProgressSnapshot)
+        .sort((a, b) => Date.parse(b.capturedAt) - Date.parse(a.capturedAt))
+        .slice(0, MAX_PROGRESS_SNAPSHOTS_TOTAL);
+    } catch (error) {
+      console.warn('No se pudo recuperar el historial local de progreso', error);
+      return [];
+    }
+  }
+
+  appState.progressSnapshots = loadProgressSnapshots();
+
+  function persistSavedSetPresets(presets) {
+    try {
+      localStorage.setItem(SET_PRESET_STORAGE_KEY, JSON.stringify(presets));
+      return true;
+    } catch (error) {
+      console.warn('No se pudieron guardar los sets locales', error);
+      return false;
+    }
+  }
+
+  function loadSavedSetPresets() {
+    try {
+      const parsed = JSON.parse(safeStorageGet(SET_PRESET_STORAGE_KEY) || '[]');
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter((preset) => preset?.version === 1
+        && typeof preset.id === 'string' && preset.id.length <= 80
+        && typeof preset.name === 'string' && preset.name.length > 0 && preset.name.length <= 48
+        && typeof preset.code === 'string' && preset.code.length <= 16000
+        && typeof preset.savedAt === 'string' && Number.isFinite(Date.parse(preset.savedAt)))
+        .slice(0, MAX_SAVED_SET_PRESETS);
+    } catch (error) {
+      console.warn('No se pudieron recuperar los sets locales', error);
+      return [];
+    }
+  }
+
+  appState.savedSetPresets = loadSavedSetPresets();
 
   function readProfileRecords(file, bytes, checksum) {
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -247,6 +325,7 @@
       profiles.push({
         key: `${file.name}:${slot}:${checksum.toString(16)}`,
         fileName: file.name,
+        sourceId: file.sourceId || (file.webkitRelativePath ? file.webkitRelativePath.replace(/[\\/][^\\/]*$/, '') : ''),
         relativePath: file.webkitRelativePath || file.name,
         slot,
         rank: rawRank || 1,
@@ -887,6 +966,115 @@
     $('#saveInspector').innerHTML = `<div class="section-intro"><div><div class="eyebrow">ESTRUCTURA Y VALIDACIÓN</div><h2>Qué leyó la app del save</h2></div><p>Inspección de solo lectura. La validez se basa en tamaño, firma del archivo, flags activos, checksum y marcas de registro de cazador.</p></div><div class="diagnostic-summary"><article class="stat-card"><div class="stat-label">Archivos comprobados</div><div class="stat-value">${validCount}/6</div><div class="stat-detail">Tamaño, firma y checksum coinciden</div></article><article class="stat-card"><div class="stat-label">Archivos activos validados</div><div class="stat-value">${activeCount}</div><div class="stat-detail">Flags de uso distintos de cero</div></article><article class="stat-card"><div class="stat-label">Cazadores detectados</div><div class="stat-value">${appState.profiles.length}</div><div class="stat-detail">Tres registros posibles por archivo</div></article></div><article class="panel diagnostic-panel"><div class="panel-heading"><div><h3>Archivos data00–data05</h3><div class="panel-subtitle">Cada archivo mide 0x14000 bytes; el checksum es la suma de los bytes desde 0x08.</div></div></div><div class="table-wrap"><table><thead><tr><th>Archivo</th><th>Firma</th><th>Tamaño</th><th>En uso</th><th>Checksum</th><th>Registros de cazador</th><th>Estado</th></tr></thead><tbody>${rows}</tbody></table></div></article><article class="panel diagnostic-panel"><div class="panel-heading"><div><h3>Registros que sí se decodifican</h3><div class="panel-subtitle">Offsets relativos al inicio del archivo; el ID interno todavía no se etiqueta como nombre.</div></div></div><div class="table-wrap"><table><thead><tr><th>Registro</th><th>Marca</th><th>ID interno (+0x1C)</th><th>Rango (+0x3DE4)</th><th>HRP (+0x3DE0)</th><th>Zenny (+0x18)</th><th>Completados · objeto</th><th>Offset registro</th></tr></thead><tbody>${profiles || '<tr><td class="table-empty" colspan="8">No hay registros activos cargados.</td></tr>'}</tbody></table></div><p class="small-note">Las misiones completadas no equivalen a un contador de cacerías. Los materiales reflejan el baúl, no la bolsa. Consulta <code>docs/save-format.md</code> para el formato y sus límites.</p></article>`;
   }
 
+  function snapshotMatchesProfile(snapshot, profile) {
+    return snapshot.sourceId === (profile.sourceId || '')
+      && snapshot.fileName.toLowerCase() === profile.fileName.toLowerCase()
+      && snapshot.slot === profile.slot
+      && snapshot.characterId === profile.characterId;
+  }
+
+  function snapshotSource(profile) {
+    return `${profile.fileName} · registro ${profile.slot + 1} · ID interno ${hex(profile.characterId)}`;
+  }
+
+  function snapshotTimestamp(value) {
+    return new Intl.DateTimeFormat('es-UY', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+  }
+
+  function makeProgressSnapshot(profile, label) {
+    const id = globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+    return {
+      version: 1,
+      id,
+      label: String(label || '').trim().slice(0, 64) || `Punto RC ${profile.rank}`,
+      capturedAt: new Date().toISOString(),
+      sourceId: profile.sourceId || '',
+      fileName: profile.fileName,
+      slot: profile.slot,
+      characterId: profile.characterId,
+      rank: profile.rank,
+      points: profile.points,
+      zenny: profile.zenny,
+      completed: [...profile.completed].sort((a, b) => a - b),
+      items: [...profile.itemCounts.entries()].sort(([a], [b]) => a - b),
+    };
+  }
+
+  function saveProgressSnapshot() {
+    const profile = currentProfile();
+    if (!profile) return;
+    const snapshot = makeProgressSnapshot(profile, $('#snapshotLabel').value);
+    const matching = appState.progressSnapshots.filter((entry) => snapshotMatchesProfile(entry, profile));
+    const otherProfiles = appState.progressSnapshots.filter((entry) => !snapshotMatchesProfile(entry, profile));
+    const next = [snapshot, ...matching.slice(0, MAX_PROGRESS_SNAPSHOTS_PER_PROFILE - 1), ...otherProfiles]
+      .slice(0, MAX_PROGRESS_SNAPSHOTS_TOTAL);
+    if (!persistProgressSnapshots(next)) {
+      notify('No se pudo guardar el punto de control. Revisa el espacio disponible de la app.');
+      return;
+    }
+    appState.progressSnapshots = next;
+    appState.historyBaselineId = matching[0]?.id || '';
+    $('#snapshotLabel').value = '';
+    renderProgressHistory(profile);
+    notify(matching.length ? 'Punto de control guardado; quedó seleccionado el anterior para comparar.' : 'Punto de control guardado en este equipo.');
+  }
+
+  function deleteProgressSnapshot(snapshotId) {
+    const snapshot = appState.progressSnapshots.find((entry) => entry.id === snapshotId);
+    const profile = currentProfile();
+    if (!snapshot || !profile || !snapshotMatchesProfile(snapshot, profile)) return;
+    const next = appState.progressSnapshots.filter((entry) => entry.id !== snapshotId);
+    if (!persistProgressSnapshots(next)) {
+      notify('No se pudo borrar el punto de control local.');
+      return;
+    }
+    appState.progressSnapshots = next;
+    if (appState.historyBaselineId === snapshotId) appState.historyBaselineId = '';
+    renderProgressHistory(profile);
+    notify('Punto de control borrado de este equipo.');
+  }
+
+  function renderProgressHistory(profile) {
+    const snapshots = appState.progressSnapshots
+      .filter((snapshot) => snapshotMatchesProfile(snapshot, profile))
+      .sort((a, b) => Date.parse(b.capturedAt) - Date.parse(a.capturedAt));
+    const baseline = snapshots.find((snapshot) => snapshot.id === appState.historyBaselineId) || snapshots[0] || null;
+    appState.historyBaselineId = baseline?.id || '';
+    const selectOptions = snapshots.map((snapshot) => `<option value="${escapeHtml(snapshot.id)}" ${snapshot.id === appState.historyBaselineId ? 'selected' : ''}>${escapeHtml(snapshot.label)} · ${escapeHtml(snapshotTimestamp(snapshot.capturedAt))} · RC ${snapshot.rank}</option>`).join('');
+    let comparison = '<div class="history-empty">Todavía no hay un punto de control para este cazador. Guarda uno ahora y vuelve a cargar el save después de jugar para comparar los cambios.</div>';
+
+    if (baseline) {
+      const oldCompleted = new Set(baseline.completed);
+      const newCompleted = profile.completed;
+      const addedQuests = [...newCompleted].filter((id) => !oldCompleted.has(id)).sort((a, b) => questTitle(a).localeCompare(questTitle(b)));
+      const removedQuests = [...oldCompleted].filter((id) => !newCompleted.has(id)).sort((a, b) => questTitle(a).localeCompare(questTitle(b)));
+      const oldItems = new Map(baseline.items);
+      const itemIds = new Set([...oldItems.keys(), ...profile.itemCounts.keys()]);
+      const changedItems = [...itemIds].map((id) => ({
+        id,
+        name: ITEM_NAMES.get(id) || `Objeto ${hex(id)}`,
+        before: oldItems.get(id) || 0,
+        now: profile.itemCounts.get(id) || 0,
+      })).map((item) => ({ ...item, delta: item.now - item.before })).filter((item) => item.delta !== 0)
+        .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta) || a.name.localeCompare(b.name));
+      const deltaLabel = (value) => `${value > 0 ? '+' : ''}${formatNumber(value)}`;
+      const stat = (label, value, delta, tone = '') => `<article class="stat-card"><div class="stat-label">${label}</div><div class="stat-value">${value}</div><div class="stat-detail ${tone}">${delta}</div></article>`;
+      const questList = (ids, emptyText, tone) => ids.length
+        ? `<ul class="history-change-list ${tone}">${ids.map((id) => `<li>${escapeHtml(questTitle(id))}</li>`).join('')}</ul>`
+        : `<p class="history-no-changes">${emptyText}</p>`;
+      const itemTable = changedItems.length
+        ? `<div class="table-wrap history-table-wrap"><table><thead><tr><th>Objeto del baúl</th><th class="numeric">Antes</th><th class="numeric">Ahora</th><th class="numeric">Diferencia neta</th></tr></thead><tbody>${changedItems.slice(0, 40).map((item) => `<tr><td>${escapeHtml(item.name)} <small>${hex(item.id)}</small></td><td class="numeric">${formatNumber(item.before)}</td><td class="numeric">${formatNumber(item.now)}</td><td class="numeric ${item.delta > 0 ? 'number-positive' : 'number-negative'}">${deltaLabel(item.delta)}</td></tr>`).join('')}</tbody></table></div>${changedItems.length > 40 ? `<p class="small-note">Se muestran 40 de ${formatNumber(changedItems.length)} tipos de objeto con cambios.</p>` : ''}`
+        : '<div class="history-no-changes">No cambiaron las cantidades registradas en el baúl.</div>';
+      comparison = `<div class="history-selected"><label for="historyBaseline">Comparar el save actual con<select id="historyBaseline" ${snapshots.length ? '' : 'disabled'}>${selectOptions}</select></label><span>Guardado: ${escapeHtml(snapshotTimestamp(baseline.capturedAt))}</span></div><div class="history-stats">${stat('RC actual', `RC ${profile.rank}`, `Punto guardado: RC ${baseline.rank} · cambio ${deltaLabel(profile.rank - baseline.rank)}`)}${stat('HRP actual', formatNumber(profile.points), `Punto guardado: ${formatNumber(baseline.points)} · cambio ${deltaLabel(profile.points - baseline.points)}`)}${stat('Zenny actual', formatNumber(profile.zenny), `Punto guardado: ${formatNumber(baseline.zenny)} · cambio ${deltaLabel(profile.zenny - baseline.zenny)}`)}${stat('Misiones nuevas', formatNumber(addedQuests.length), `${formatNumber(removedQuests.length)} dejaron de figurar como completadas`, addedQuests.length ? 'number-positive' : '')}${stat('Tipos de objeto cambiados', formatNumber(changedItems.length), 'Diferencias en el baúl')}</div><div class="history-change-grid"><section><h4>Misiones que ahora figuran completadas</h4>${questList(addedQuests, 'Ninguna misión nueva registrada.', 'history-added')}</section><section><h4>Misiones que ya no figuran completadas</h4>${questList(removedQuests, 'No desaparecieron banderas de misión.', 'history-removed')}</section></div><section class="history-items"><h4>Cambios netos del baúl</h4>${itemTable}</section><p class="small-note">Las diferencias de objetos no indican cómo se obtuvieron o usaron: el guardado puede cambiar por recolección, venta, forja o traslado entre baúl y bolsa. Comparación local basada en el registro cargado actualmente.</p>`;
+    }
+
+    $('#historyComparison').innerHTML = `<div class="panel-heading"><div><h3>Comparación</h3><div class="panel-subtitle">Actual: ${escapeHtml(snapshotSource(profile))} · el nombre del cazador no se decodifica.</div></div>${snapshots.length ? `<span class="tag">${snapshots.length} punto${snapshots.length === 1 ? '' : 's'} guardado${snapshots.length === 1 ? '' : 's'}</span>` : ''}</div>${comparison}`;
+    const rows = snapshots.length
+      ? snapshots.map((snapshot) => `<article class="history-entry"><div><strong>${escapeHtml(snapshot.label)}</strong><small>${escapeHtml(snapshotTimestamp(snapshot.capturedAt))} · RC ${snapshot.rank} · ${formatNumber(snapshot.points)} HRP · ${formatNumber(snapshot.completed.length)} misiones · ${formatNumber(snapshot.items.length)} objetos</small></div><button class="button button-secondary history-delete" type="button" data-delete-snapshot="${escapeHtml(snapshot.id)}" aria-label="Borrar punto de control ${escapeHtml(snapshot.label)}">Borrar</button></article>`).join('')
+      : '<div class="history-empty">Los puntos de control aparecerán aquí y solo serán visibles para este registro.</div>';
+    $('#historyList').innerHTML = `<div class="panel-heading"><div><h3>Puntos de control de este cazador</h3><div class="panel-subtitle">Se separan por una huella local de la carpeta, archivo, ranura e ID interno en bruto; no se almacena la ruta ni se afirma conocer el nombre guardado del cazador.</div></div></div><div class="history-entry-list">${rows}</div>`;
+  }
+
   function armorSkills() {
     const map = new Map();
     for (const tree of DATA.skillTrees) {
@@ -1000,6 +1188,89 @@
       renderSetBuilder();
     }));
     renderSetSummary();
+    renderSetPresets();
+  }
+
+  function renderSetPresets() {
+    const root = $('#savedSetList');
+    $('#savedSetCount').textContent = `${appState.savedSetPresets.length} / ${MAX_SAVED_SET_PRESETS}`;
+    if (!appState.savedSetPresets.length) {
+      root.innerHTML = '<div class="saved-set-empty">Aún no guardaste sets. Arma uno abajo, ponle nombre y guárdalo para volver a usarlo.</div>';
+      return;
+    }
+    root.innerHTML = appState.savedSetPresets.map((preset) => {
+      let summary = 'Este código no coincide con el catálogo disponible.';
+      let valid = false;
+      try {
+        const parsed = parseSetShareCode(preset.code);
+        const pieces = PIECE_TYPES.map((type) => ARMOR.find((piece) => piece.type === type && piece.id === parsed.set[type])).filter(Boolean);
+        const jewelCount = Object.values(parsed.decorations).reduce((total, jewels) => total + jewels.length, 0);
+        summary = `${parsed.style === 'blade' ? 'Espadachín' : 'Artillero'} · ${pieces.length}/5 piezas · ${jewelCount} joyas · ${pieces.map((piece) => piece.name).join(' · ') || 'sin piezas'}`;
+        valid = true;
+      } catch { /* el set se conserva para poder borrarlo aunque el catálogo ya no lo soporte */ }
+      return `<article class="saved-set-row"><div><strong>${escapeHtml(preset.name)}</strong><small>${escapeHtml(summary)} · ${escapeHtml(snapshotTimestamp(preset.savedAt))}</small></div><div class="saved-set-actions">${valid ? `<button class="button button-secondary" type="button" data-apply-saved-set="${escapeHtml(preset.id)}">Cargar</button><button class="button button-secondary" type="button" data-share-saved-set="${escapeHtml(preset.id)}">Compartir</button>` : '<span class="tag warn">Catálogo incompatible</span>'}<button class="button button-secondary" type="button" data-delete-saved-set="${escapeHtml(preset.id)}" aria-label="Borrar set ${escapeHtml(preset.name)}">Borrar</button></div></article>`;
+    }).join('');
+  }
+
+  function saveCurrentSetPreset() {
+    if (!Object.keys(appState.set).length) {
+      notify('Elige al menos una pieza antes de guardar un set.');
+      return;
+    }
+    if (appState.savedSetPresets.length >= MAX_SAVED_SET_PRESETS) {
+      notify(`Llegaste al límite de ${MAX_SAVED_SET_PRESETS} sets guardados. Borra uno para agregar otro.`);
+      return;
+    }
+    const name = $('#setPresetName').value.trim().slice(0, 48);
+    if (!name) {
+      $('#setPresetName').focus();
+      notify('Escribe un nombre para este set.');
+      return;
+    }
+    const preset = {
+      version: 1,
+      id: globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`,
+      name,
+      savedAt: new Date().toISOString(),
+      code: makeSetShareCode(),
+    };
+    const next = [preset, ...appState.savedSetPresets];
+    if (!persistSavedSetPresets(next)) {
+      notify('No se pudo guardar el set local. Revisa el espacio disponible de la app.');
+      return;
+    }
+    appState.savedSetPresets = next;
+    $('#setPresetName').value = '';
+    renderSetPresets();
+    notify(`Set guardado en este equipo: ${name}.`);
+  }
+
+  function applySavedSet(presetId) {
+    const preset = appState.savedSetPresets.find((entry) => entry.id === presetId);
+    if (!preset) return;
+    try {
+      const imported = parseSetShareCode(preset.code);
+      appState.armorStyle = imported.style;
+      appState.set = imported.set;
+      appState.decorations = imported.decorations;
+      $$('.style-button').forEach((button) => button.classList.toggle('active', button.dataset.style === imported.style));
+      renderSetBuilder();
+      notify(`Set cargado: ${preset.name}.`);
+    } catch (error) {
+      notify(error?.message || 'No se pudo cargar este set guardado.');
+    }
+  }
+
+  function deleteSavedSet(presetId) {
+    const next = appState.savedSetPresets.filter((entry) => entry.id !== presetId);
+    if (next.length === appState.savedSetPresets.length) return;
+    if (!persistSavedSetPresets(next)) {
+      notify('No se pudo borrar el set local.');
+      return;
+    }
+    appState.savedSetPresets = next;
+    renderSetPresets();
+    notify('Set borrado de este equipo.');
   }
 
   function trimDecorations(type, maxSlots) {
@@ -1079,6 +1350,7 @@
       renderHunts(profile);
       renderMaterials(profile);
       renderSaveInspector();
+      renderProgressHistory(profile);
       renderSetBuilder();
       showView(appState.view);
     } catch (error) {
@@ -1105,6 +1377,7 @@
       hunts: ['OBJETIVOS COMPLETADOS', 'Monstruos'],
       materials: ['BAÚL DE OBJETOS', 'Materiales'],
       save: ['DIAGNÓSTICO DE PARTIDA', 'Inspector de save'],
+      history: ['PUNTOS DE CONTROL LOCALES', 'Historial de progreso'],
       sets: ['PLANIFICADOR DE EQUIPO', 'Armar set'],
     };
     if (updateTitle && names[view]) {
@@ -1195,12 +1468,51 @@
   document.querySelectorAll('[data-open-save-folder]').forEach((button) => button.addEventListener('click', chooseSaveFolder));
   window.mh3Desktop?.onOpenSaveFolder(chooseSaveFolder);
   $('#profileSelect').addEventListener('change', (event) => { appState.selected = Number(event.target.value); renderApp(); });
+  $('#saveSnapshot').addEventListener('click', saveProgressSnapshot);
+  $('#snapshotLabel').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      saveProgressSnapshot();
+    }
+  });
+  $('#saveSetPreset').addEventListener('click', saveCurrentSetPreset);
+  $('#setPresetName').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      saveCurrentSetPreset();
+    }
+  });
   $$('.nav-item').forEach((button) => button.addEventListener('click', () => showView(button.dataset.view)));
   document.addEventListener('click', (event) => {
     const go = event.target.closest('[data-goto]');
     if (go) showView(go.dataset.goto);
     const changeGoal = event.target.closest('[data-change-weapon-goal]');
     const removeGoal = event.target.closest('[data-remove-weapon-goal]');
+    const removeSnapshot = event.target.closest('[data-delete-snapshot]');
+    if (removeSnapshot) {
+      deleteProgressSnapshot(removeSnapshot.dataset.deleteSnapshot);
+      return;
+    }
+    const applyPreset = event.target.closest('[data-apply-saved-set]');
+    if (applyPreset) {
+      applySavedSet(applyPreset.dataset.applySavedSet);
+      return;
+    }
+    const sharePreset = event.target.closest('[data-share-saved-set]');
+    if (sharePreset) {
+      const preset = appState.savedSetPresets.find((entry) => entry.id === sharePreset.dataset.shareSavedSet);
+      if (preset) {
+        $('#setShareCode').value = preset.code;
+        updateSetShareStatus(`Código de “${preset.name}” listo para compartir.`);
+        $('#setShareDialog').showModal();
+      }
+      return;
+    }
+    const removePreset = event.target.closest('[data-delete-saved-set]');
+    if (removePreset) {
+      deleteSavedSet(removePreset.dataset.deleteSavedSet);
+      return;
+    }
     const profile = currentProfile();
     if (!profile) return;
     if (changeGoal) {
@@ -1223,6 +1535,13 @@
       appState.weaponShoppingList = [];
       persistWeaponShoppingList();
       renderWeaponShoppingList(profile);
+    }
+  });
+  document.addEventListener('change', (event) => {
+    if (event.target.matches('#historyBaseline')) {
+      appState.historyBaselineId = event.target.value;
+      const profile = currentProfile();
+      if (profile) renderProgressHistory(profile);
     }
   });
   $('#monsterSearch').addEventListener('input', (event) => { appState.monsterSearch = event.target.value; const profile = currentProfile(); if (profile) renderHunts(profile); });

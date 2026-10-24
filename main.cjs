@@ -1,4 +1,5 @@
 const { app, BrowserWindow, dialog, ipcMain, Menu } = require('electron');
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
@@ -26,7 +27,8 @@ function readSaveFiles(filePaths) {
       if (!stat.isFile()) throw new Error(`${path.basename(filePath)} no es un archivo.`);
       if (stat.size > MAX_SAVE_FILE_SIZE) throw new Error(`${path.basename(filePath)} supera el tamaño máximo esperado para un save.`);
       const bytes = fs.readFileSync(filePath);
-      return { name: path.basename(filePath), size: bytes.byteLength, bytes: Uint8Array.from(bytes) };
+      const sourceId = crypto.createHash('sha256').update(path.resolve(path.dirname(filePath)).toLowerCase()).digest('hex').slice(0, 24);
+      return { name: path.basename(filePath), size: bytes.byteLength, bytes: Uint8Array.from(bytes), sourceId };
     });
     return { files };
   } catch (error) {
