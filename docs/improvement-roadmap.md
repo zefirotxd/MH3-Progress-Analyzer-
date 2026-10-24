@@ -1,21 +1,44 @@
 # Analyzer improvement roadmap
 
-## In this version
+## Landed in the current working tree
 
-- Explain the six-file container and profile-record validation instead of showing only a generic import error.
-- Report size, expected `FILE1`–`FILE6` signature, nonzero/inactive state, checksum, and occupied character slots for every selected file.
-- Show the values and offsets used for each recognized character so the user can see what the app actually read.
-- Keep malformed data visible as diagnostics and skip it without writing anything to the save.
+- Show all save folders found under a selected root and ask the user to choose when more than one candidate exists. Never merge separate folders.
+- Report file access errors and skip oversized inputs before allocating their contents.
+- Plan craft and upgrade routes for the six blademaster weapon classes. Compare all route materials with the selected hunter's item box and rank routes by missing quantities.
+- Let the user specify a manually owned starting weapon; the save parser does not claim to know the hunter's equipment.
+- Add decorations to armor pieces, enforce each piece's slot budget and include their skill points in the set summary.
+- Apply stacked `Torso Up` to chest armor and decorations in the armor skill simulation.
+- Keep upstream data snapshots committed so app builds remain offline; provide a separate maintainer sync command.
 
-## Next, after field verification
+## Next improvements, ordered by user value and evidence
 
-1. Read character display name and play time from confirmed character-record fields.
-2. Decode owned equipment and compare it with forge recipes/material costs; avoid presenting base armor stats as an owned set.
-3. Decode pouch inventory separately from the item box.
-4. Identify Moga resource points, farm state, and villager-request flags from before/after save comparisons.
-5. Add a save comparison view to show only fields that changed between two local files.
-6. Add automated regression fixtures made from synthetic data, never the user's personal save.
+### 1. Make gear planning complete
+
+- Add weapon decorations and charms only after checking their slot and point semantics against MH3 data.
+- Add armor forge costs when a reliable source becomes available. The current dataset has armor statistics, but no armor recipes.
+- Export/import a compact set code so players can share builds without sharing a save.
+
+### 2. Help answer “what do I need next?”
+
+- Build a material shopping list from several selected armor and weapon targets, combining duplicate requirements and subtracting the item-box stock once.
+- Link each missing material to quests where it appears, with carve/capture/reward conditions and a source-confidence label.
+- Add optional drop-rate summaries only after checking source coverage; do not make a partial event-quest catalog look complete.
+- Add quest filters by rank, monster, objective and location, and mark which quest requirements are confirmed by the current save.
+
+### 3. Learn the save format safely
+
+- Add a local before/after save comparison that reports changed byte ranges without uploading or modifying either file.
+- Decode equipment, pouch items, Moga points, farm state, requests and Cha-Cha state only after offsets pass controlled before/after checks and a known-game comparison.
+- Add synthetic regression fixtures for file flags, checksums, slots and each confirmed field. Never check in the user's personal save.
+- Document region/version differences and clearly separate “confirmed”, “inferred” and “not decoded” fields.
+
+### 4. Make repeated use easier
+
+- Remember only the last selected folder and offer a refresh action; never persist save bytes.
+- Add a recent hunters list and compare two loaded snapshots without treating completion flags as lifetime hunt counts.
+- Improve Spanish names/search aliases for items, monsters and quests while preserving the upstream English name for cross-reference.
+- Add keyboard navigation and a clearer diagnostic summary for partial or invalid six-file selections.
 
 ## Evidence standard
 
-Every field must have its file/record-relative offset, width, byte order, validation method, and a known-game comparison before it is presented as fact. Inferences are labeled as such. This app remains read-only.
+Every decoded save field needs a file/record-relative offset, width, byte order, validation method and known-game comparison before it is shown as fact. Inferences are labeled. Catalog features carry their source and coverage limits. The app stays read-only.

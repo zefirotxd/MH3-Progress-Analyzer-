@@ -15,32 +15,41 @@ function filesIn(directory) {
     .map((entry) => path.join(directory, entry.name));
 }
 
-function findSaveFiles(folder) {
+function findSaveCandidates(folder) {
   const suffix = path.join('nand', 'title', '00010000', '524d4850', 'data', 'nocopy');
-  const candidates = [folder, path.join(folder, suffix), path.join(folder, 'saves', suffix)];
-  for (const candidate of candidates) {
-    const files = filesIn(candidate);
-    if (files.length) return files;
-  }
+  const candidates = new Map();
+  const addCandidate = (directory) => {
+    const absolute = path.resolve(directory);
+    const files = filesIn(absolute);
+    if (!files.length) return false;
+    const key = absolute.toLowerCase();
+    if (!candidates.has(key)) candidates.set(key, { folder: absolute, files });
+    return true;
+  };
+  const preferred = [folder, path.join(folder, suffix), path.join(folder, 'saves', suffix)];
+  for (const directory of preferred) addCandidate(directory);
 
   const ignored = new Set(['.git', 'node_modules', 'cache', 'graphics', 'dist', 'build', 'target', '$recycle.bin']);
-  const pending = [folder];
-  let visited = 0;
-  while (pending.length && visited < 20000) {
+  const pending = [path.resolve(folder)];
+  const visited = new Set();
+  while (pending.length && visited.size < 20000) {
     const current = pending.pop();
-    visited += 1;
-    const entries = directoryEntries(current);
-    const files = entries
-      .filter((entry) => entry.isFile() && /^data0[0-5]$/i.test(entry.name))
-      .map((entry) => path.join(current, entry.name));
-    if (files.length) return files;
+    const key = current.toLowerCase();
+    if (visited.has(key)) continue;
+    visited.add(key);
+    addCandidate(current);
+    const entries = directoryEntries(current).sort((a, b) => b.name.localeCompare(a.name));
     for (const entry of entries) {
       if (entry.isDirectory() && !entry.isSymbolicLink() && !ignored.has(entry.name.toLowerCase())) {
         pending.push(path.join(current, entry.name));
       }
     }
   }
-  return [];
+  return [...candidates.values()].sort((a, b) => b.files.length - a.files.length || a.folder.localeCompare(b.folder));
 }
 
-module.exports = { findSaveFiles };
+function findSaveFiles(folder) {
+  return findSaveCandidates(folder)[0]?.files || [];
+}
+
+module.exports = { findSaveCandidates, findSaveFiles };

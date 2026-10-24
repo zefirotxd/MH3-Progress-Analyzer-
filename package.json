@@ -1,6 +1,6 @@
 {
   "name": "mh3-progress-analyzer",
-  "version": "0.2.0",
+  "version": "0.3.0-preview.1",
   "private": true,
   "author": "zefirotxd",
   "description": "Analizador local y de solo lectura de progreso para Monster Hunter Tri",
@@ -9,14 +9,20 @@
     "url": "https://github.com/zefirotxd/MH3-Progress-Analyzer-.git"
   },
   "main": "main.cjs",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "build:data": "node tools/build-data.mjs",
+    "sync:data": "node tools/sync-upstream-data.mjs",
     "start": "electron .",
     "dist": "electron-builder --win nsis"
   },
   "devDependencies": {
     "electron": "^45.0.0",
-    "electron-builder": "^26.18.0"
+    "electron-builder": "^26.18.0",
+    "jiti": "^2.7.0",
+    "mh3-data": "^2.0.2"
   },
   "build": {
     "appId": "com.oceantri.mh3progressanalyzer",
@@ -36,7 +42,9 @@
       "THIRD-PARTY-LICENSES.txt"
     ],
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "icon": "assets/mh3.ico"
     },
     "nsis": {

@@ -100,6 +100,18 @@
         <section class="view" id="view-materials">
           <div class="section-intro"><div><div class="eyebrow">BAÚL DE OBJETOS</div><h2>Lo que tienes guardado</h2></div><p>Lectura de los espacios del baúl. No incluye objetos que estén solamente en la bolsa del cazador.</p></div>
           <div class="request-panel panel" id="requestPanel"></div>
+          <article class="panel weapon-planner">
+            <div class="panel-heading"><div><h3>Plan de forja de armas</h3><div class="panel-subtitle">Calcula materiales desde cero o desde un arma que ya tienes.</div></div></div>
+            <div class="weapon-controls">
+              <label>Clase<select id="weaponClass"></select></label>
+              <label>Arma objetivo<select id="weaponTarget"></select></label>
+              <label>Partir desde<select id="weaponStart"></select></label>
+            </div>
+            <label class="weapon-route-label" for="weaponRoute">Ruta de mejora</label>
+            <select id="weaponRoute" class="weapon-route"></select>
+            <div id="weaponPlanResult" class="weapon-plan-result"></div>
+            <p class="small-note">La app no lee qué arma tienes equipada: elige manualmente el punto de partida. Los materiales comparan solo el baúl; no incluyen bolsa ni zenny. Los datos de recetas provienen de mh3-data y pueden tener huecos.</p>
+          </article>
           <div class="toolbar"><input id="itemSearch" type="search" placeholder="Buscar material u objeto…"><span id="itemCount" class="muted"></span></div>
           <div class="table-wrap"><table><thead><tr><th>Objeto</th><th class="numeric">Cantidad en baúl</th></tr></thead><tbody id="itemRows"></tbody></table></div>
         </section>
@@ -116,12 +128,25 @@
           </div>
           <div class="set-builder" id="setBuilder"></div>
           <div class="set-results" id="setResults"></div>
-          <p class="small-note">La vista usa las estadísticas base de las piezas. No incluye mejoras, amuletos ni joyas; las recetas de armadura tampoco están disponibles en la fuente de datos incluida.</p>
+          <p class="small-note">La vista combina estadísticas, joyas colocadas en los espacios de cada pieza y Torso Up. No incluye mejoras ni amuletos; las recetas de armadura no están disponibles en la fuente de datos incluida.</p>
         </section>
       </div>
 
-      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.2.0</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
+      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.3.0-preview.1</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
     </main>
   </div>
+  <dialog id="saveCandidateDialog" class="save-candidate-dialog">
+    <form method="dialog">
+      <div class="eyebrow">VARIAS PARTIDAS ENCONTRADAS</div>
+      <h2>Elige la carpeta correcta</h2>
+      <p>Encontré más de una carpeta con archivos data00–data05. Selecciona una para evitar mezclar o abrir una partida distinta.</p>
+      <label for="saveCandidateSelect">Ubicación</label>
+      <select id="saveCandidateSelect"></select>
+      <div class="candidate-actions">
+        <button class="button button-secondary" value="cancel">Cancelar</button>
+        <button class="button button-primary" value="choose">Abrir esta partida</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>

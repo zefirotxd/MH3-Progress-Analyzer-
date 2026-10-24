@@ -2,10 +2,28 @@ const { app, BrowserWindow, dialog, ipcMain, Menu } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
-const { findSaveFiles } = require('./find-saves.cjs');
+const { findSaveCandidates } = require('./find-saves.cjs');
 
 const APP_TITLE = 'MH3 Progress Analyzer';
 let mainWindow;
+let pendingSaveCandidates = [];
+const MAX_SAVE_FILE_SIZE = 1024 * 1024;
+
+function readSaveFiles(filePaths) {
+  try {
+    const paths = filePaths.filter((filePath) => /^data0[0-5]$/i.test(path.basename(filePath)));
+    const files = paths.map((filePath) => {
+      const stat = fs.statSync(filePath);
+      if (!stat.isFile()) throw new Error(`${path.basename(filePath)} no es un archivo.`);
+      if (stat.size > MAX_SAVE_FILE_SIZE) throw new Error(`${path.basename(filePath)} supera el tamaño máximo esperado para un save.`);
+      const bytes = fs.readFileSync(filePath);
+      return { name: path.basename(filePath), size: bytes.byteLength, bytes: Uint8Array.from(bytes) };
+    });
+    return { files };
+  } catch (error) {
+    return { error: `No se pudo leer la partida: ${error?.message || 'error de acceso'}` };
+  }
+}
 
 function createMenu() {
   const template = [
@@ -86,12 +104,9 @@ ipcMain.handle('save:open-dialog', async () => {
     title: 'Selecciona los archivos data00–data05 de tu partida',
     properties: ['openFile', 'multiSelections'],
   });
-  if (result.canceled) return [];
+  if (result.canceled) return { canceled: true, files: [] };
 
-  return result.filePaths.map((filePath) => {
-    const bytes = fs.readFileSync(filePath);
-    return { name: path.basename(filePath), size: bytes.byteLength, bytes: Uint8Array.from(bytes) };
-  });
+  return readSaveFiles(result.filePaths);
 });
 
 ipcMain.handle('save:open-folder', async () => {
@@ -103,15 +118,29 @@ ipcMain.handle('save:open-folder', async () => {
   if (result.canceled || !result.filePaths[0]) return { canceled: true, files: [] };
 
   const folder = result.filePaths[0];
-  const paths = findSaveFiles(folder);
-  return {
-    canceled: false,
-    folder,
-    files: paths.map((filePath) => {
-      const bytes = fs.readFileSync(filePath);
-      return { name: path.basename(filePath), size: bytes.byteLength, bytes: Uint8Array.from(bytes) };
-    }),
-  };
+  const candidates = findSaveCandidates(folder);
+  if (!candidates.length) return { canceled: false, folder, candidates: [], files: [] };
+  if (candidates.length > 1) {
+    pendingSaveCandidates = candidates;
+    return {
+      canceled: false,
+      folder,
+      candidates: candidates.map((candidate, index) => ({
+        index,
+        folder: candidate.folder,
+        fileCount: candidate.files.length,
+      })),
+    };
+  }
+  const candidate = candidates[0];
+  return { canceled: false, folder: candidate.folder, ...readSaveFiles(candidate.files) };
+});
+
+ipcMain.handle('save:choose-candidate', async (_event, index) => {
+  const candidate = Number.isInteger(index) ? pendingSaveCandidates[index] : null;
+  pendingSaveCandidates = [];
+  if (!candidate) return { error: 'La carpeta seleccionada ya no está disponible. Vuelve a buscar las saves.' };
+  return { folder: candidate.folder, ...readSaveFiles(candidate.files) };
 });
 
 app.whenReady().then(() => {

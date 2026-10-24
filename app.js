@@ -17,12 +17,13 @@
     };
     document.querySelector('#saveFiles')?.addEventListener('change', reportUnavailable);
     window.mh3Desktop?.onOpenSaveDialog(async () => {
-      const files = await window.mh3Desktop.openSaveFiles();
-      if (files.length) reportUnavailable();
+      const result = await window.mh3Desktop.openSaveFiles();
+      if (result?.files?.length) reportUnavailable();
     });
     const chooseFolder = async () => {
       const result = await window.mh3Desktop?.openSaveFolder();
       if (result?.files?.length) reportUnavailable();
+      else if (result?.candidates?.length) reportUnavailable();
     };
     document.querySelectorAll('[data-open-save-folder]').forEach((button) => button.addEventListener('click', chooseFolder));
     window.mh3Desktop?.onOpenSaveFolder(chooseFolder);
@@ -30,6 +31,7 @@
   }
 
   const FILE_SIZE = 0x14000;
+  const MAX_SAVE_SIZE = 1024 * 1024;
   const CHAR_START = 0x48;
   const CHAR_SIZE = 0x6000;
   const ITEM_BOX = 0x180;
@@ -46,6 +48,12 @@
     head: 'Cabeza', chest: 'Pecho', arms: 'Brazos', waist: 'Cintura', legs: 'Piernas',
   };
   const PIECE_TYPES = ['head', 'chest', 'arms', 'waist', 'legs'];
+  const WEAPON_CLASS_ORDER = ['Great Sword', 'Longsword', 'Sword and Shield', 'Hammer', 'Lance', 'Switch Axe'];
+  const WEAPON_CLASSES = WEAPON_CLASS_ORDER.filter((type) => (DATA.weapons || []).some((weapon) => weapon.type === type));
+  const WEAPON_CLASS_NAMES = {
+    'Great Sword': 'Espada grande', Longsword: 'Espada larga', 'Sword and Shield': 'Espada y escudo',
+    Hammer: 'Martillo', Lance: 'Lanza', 'Switch Axe': 'Hacha espada',
+  };
 
   const QUEST_LABELS = new Map([
     [0x2711, 'Sunken Treasures'], [0x2714, 'Help the "Hunter"'],
@@ -103,7 +111,7 @@
     { title: 'One Chance · misiones extra de 5★', items: [['Flabby Hide', 2], ['Rath Talon', 2], ['Machalite Ore', 8]], note: 'Solicitud de Junior. El guardado no expone su estado de entrega; confirma con el NPC si ya la completaste.' },
   ];
 
-  const appState = { profiles: [], files: [], selected: 0, view: 'dashboard', monsterSearch: '', itemSearch: '', armorStyle: 'blade', set: {} };
+  const appState = { profiles: [], files: [], selected: 0, view: 'dashboard', monsterSearch: '', itemSearch: '', armorStyle: 'blade', set: {}, decorations: {}, weaponClass: WEAPON_CLASSES[0] || '', weaponTarget: '', weaponStart: '', weaponRoute: 0 };
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
@@ -181,10 +189,23 @@
     const diagnostics = [];
     let inactiveFiles = 0;
     for (const file of files) {
-      const bytes = file.bytes
-        ? new Uint8Array(file.bytes)
-        : new Uint8Array(await file.arrayBuffer());
       const expectedMagic = `FILE${Number(file.name.at(-1)) + 1}`;
+      const declaredSize = Number(file.size || file.bytes?.byteLength || 0);
+      if (declaredSize > MAX_SAVE_SIZE) {
+        diagnostics.push({ name: file.name.toLowerCase(), size: declaredSize, expectedMagic, magic: '—', checksumOk: false, slots: [], status: 'Archivo demasiado grande' });
+        errors.push(`${file.name}: supera el tamaño máximo esperado para un save`);
+        continue;
+      }
+      let bytes;
+      try {
+        bytes = file.bytes
+          ? new Uint8Array(file.bytes)
+          : new Uint8Array(await file.arrayBuffer());
+      } catch (error) {
+        diagnostics.push({ name: file.name.toLowerCase(), size: declaredSize || null, expectedMagic, magic: '—', checksumOk: false, slots: [], status: 'No se pudo leer' });
+        errors.push(`${file.name}: no se pudo leer (${error?.message || 'error de acceso'})`);
+        continue;
+      }
       const diagnostic = {
         name: file.name.toLowerCase(),
         size: bytes.byteLength,
@@ -277,6 +298,16 @@
     toast.classList.add('show');
     clearTimeout(notify.timer);
     notify.timer = setTimeout(() => toast.classList.remove('show'), 5200);
+  }
+
+  function selectSaveCandidate(candidates) {
+    const dialog = $('#saveCandidateDialog');
+    const select = $('#saveCandidateSelect');
+    select.innerHTML = candidates.map((candidate) => `<option value="${candidate.index}">${escapeHtml(candidate.folder)} · ${candidate.fileCount}/6 archivos</option>`).join('');
+    return new Promise((resolve) => {
+      dialog.addEventListener('close', () => resolve(dialog.returnValue === 'choose' ? Number(select.value) : null), { once: true });
+      dialog.showModal();
+    });
   }
 
   function currentProfile() { return appState.profiles[appState.selected] || null; }
@@ -464,6 +495,114 @@
       const count = item ? profile.itemCounts.get(item.id) || 0 : 0;
       return `<div class="request-item ${count >= required ? 'enough' : ''}"><strong>${escapeHtml(item?.name || name)}</strong><span>${formatNumber(count)} / ${required} ${count >= required ? '· alcanza' : '· faltan ' + formatNumber(required - count)}</span></div>`;
     }).join('')}</div></div>`).join('<div class="request-separator"></div>');
+    renderWeaponPlanner(profile);
+  }
+
+  function weaponPathOptions(weapons, targetId) {
+    const byId = new Map(weapons.map((weapon) => [weapon.id, weapon]));
+    const found = new Set();
+    const pending = [...(byId.get(Number(targetId))?.upgradesFrom?.weaponId || [])];
+    while (pending.length) {
+      const id = pending.pop();
+      if (found.has(id) || !byId.has(id)) continue;
+      found.add(id);
+      pending.push(...(byId.get(id).upgradesFrom?.weaponId || []));
+    }
+    found.add(Number(targetId));
+    return [...found].map((id) => byId.get(id)).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  function collectForgePaths(weapons, targetId, startId) {
+    const byId = new Map(weapons.map((weapon) => [weapon.id, weapon]));
+    const sourceId = startId === '' ? null : Number(startId);
+    const visit = (weapon, seen) => {
+      if (!weapon || seen.has(weapon.id)) return [];
+      if (sourceId !== null && weapon.id === sourceId) return [{ weapons: [weapon], steps: [] }];
+      const nextSeen = new Set(seen).add(weapon.id);
+      const paths = [];
+      if (sourceId === null && weapon.create?.length) {
+        paths.push({ weapons: [weapon], steps: [{ weapon, materials: weapon.create, action: 'Forja' }] });
+      }
+      for (const predecessorId of weapon.upgradesFrom?.weaponId || []) {
+        const predecessor = byId.get(predecessorId);
+        for (const prefix of visit(predecessor, nextSeen)) {
+          paths.push({
+            weapons: [...prefix.weapons, weapon],
+            steps: [...prefix.steps, { weapon, materials: weapon.upgradesFrom?.materials || [], action: 'Mejora' }],
+          });
+          if (paths.length >= 1000) return paths;
+        }
+      }
+      return paths;
+    };
+    return visit(byId.get(Number(targetId)), new Set());
+  }
+
+  function scoreForgePath(path, profile) {
+    const requirements = new Map();
+    for (const step of path.steps) {
+      for (const material of step.materials || []) {
+        requirements.set(material.itemId, (requirements.get(material.itemId) || 0) + material.amount);
+      }
+    }
+    const rows = [...requirements.entries()].map(([id, required]) => ({
+      id,
+      required,
+      owned: profile.itemCounts.get(id) || 0,
+      missing: Math.max(0, required - (profile.itemCounts.get(id) || 0)),
+      name: ITEM_NAMES.get(id) || `Objeto #${id}`,
+    })).sort((a, b) => a.name.localeCompare(b.name));
+    return {
+      ...path,
+      rows,
+      missing: rows.reduce((total, row) => total + row.missing, 0),
+      total: rows.reduce((total, row) => total + row.required, 0),
+    };
+  }
+
+  function renderWeaponPlanner(profile) {
+    const classSelect = $('#weaponClass');
+    const targetSelect = $('#weaponTarget');
+    const startSelect = $('#weaponStart');
+    const routeSelect = $('#weaponRoute');
+    classSelect.innerHTML = WEAPON_CLASSES.map((type) => `<option value="${escapeHtml(type)}">${escapeHtml(WEAPON_CLASS_NAMES[type] || type)}</option>`).join('');
+    if (!WEAPON_CLASSES.includes(appState.weaponClass)) appState.weaponClass = WEAPON_CLASSES[0] || '';
+    classSelect.value = appState.weaponClass;
+
+    const weapons = (DATA.weapons || []).filter((weapon) => weapon.type === appState.weaponClass);
+    const ordered = [...weapons].sort((a, b) => a.name.localeCompare(b.name));
+    if (!weapons.some((weapon) => String(weapon.id) === String(appState.weaponTarget))) appState.weaponTarget = String(ordered[0]?.id ?? '');
+    targetSelect.innerHTML = ordered.map((weapon) => `<option value="${weapon.id}">${escapeHtml(weapon.name)}</option>`).join('');
+    targetSelect.value = appState.weaponTarget;
+
+    const starts = weaponPathOptions(weapons, appState.weaponTarget);
+    if (appState.weaponStart !== '' && !starts.some((weapon) => String(weapon.id) === String(appState.weaponStart))) appState.weaponStart = '';
+    startSelect.innerHTML = `<option value="">Desde cero</option>${starts.map((weapon) => `<option value="${weapon.id}">Ya tengo: ${escapeHtml(weapon.name)}</option>`).join('')}`;
+    startSelect.value = appState.weaponStart;
+
+    const paths = collectForgePaths(weapons, appState.weaponTarget, appState.weaponStart)
+      .map((path) => scoreForgePath(path, profile))
+      .sort((a, b) => a.missing - b.missing || a.steps.length - b.steps.length || a.total - b.total || a.weapons.map((weapon) => weapon.name).join(' ').localeCompare(b.weapons.map((weapon) => weapon.name).join(' ')));
+    appState.weaponRoute = clamp(appState.weaponRoute, 0, Math.max(0, paths.length - 1));
+    routeSelect.innerHTML = paths.map((path, index) => {
+      const routeName = path.weapons.map((weapon) => weapon.name).join(' → ');
+      const status = path.missing === 0 ? 'materiales del baúl suficientes' : `faltan ${formatNumber(path.missing)}`;
+      return `<option value="${index}">Ruta ${index + 1} · ${escapeHtml(routeName)} · ${status}</option>`;
+    }).join('');
+    routeSelect.disabled = paths.length < 2;
+    if (paths.length) routeSelect.value = String(appState.weaponRoute);
+
+    const result = $('#weaponPlanResult');
+    if (!paths.length) {
+      result.innerHTML = '<div class="weapon-empty">No hay una receta completa conectada para esta ruta en los datos incluidos. Prueba otra arma objetivo o punto de partida.</div>';
+      return;
+    }
+    const path = paths[appState.weaponRoute];
+    const target = weapons.find((weapon) => String(weapon.id) === String(appState.weaponTarget));
+    const weaponDetail = target ? `Ataque ${formatNumber(target.attack)} · ${target.secondaryDamageType ? `${escapeHtml(target.secondaryDamageType)} ${formatNumber(target.secondaryAttack)}` : 'sin elemento'} · afinidad ${target.affinity > 0 ? '+' : ''}${target.affinity}% · ${target.slots} ranura${target.slots === 1 ? '' : 's'}` : '';
+    const pathMarkup = path.weapons.map((weapon, index) => `<span class="weapon-path-step">${escapeHtml(weapon.name)}</span>${index < path.weapons.length - 1 ? '<span class="weapon-path-arrow">→</span>' : ''}`).join('');
+    const materials = path.rows.length ? `<div class="table-wrap weapon-material-table"><table><thead><tr><th>Material</th><th class="numeric">Necesitas</th><th class="numeric">En baúl</th><th class="numeric">Faltan</th></tr></thead><tbody>${path.rows.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td class="numeric">${formatNumber(row.required)}</td><td class="numeric">${formatNumber(row.owned)}</td><td class="numeric ${row.missing ? 'number-negative' : 'number-positive'}">${formatNumber(row.missing)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="weapon-empty">No se requieren materiales para el tramo seleccionado; el arma objetivo ya está marcada como punto de partida.</div>';
+    result.innerHTML = `<div class="weapon-plan-heading"><div><strong>${escapeHtml(target?.name || 'Arma seleccionada')}</strong><span>${weaponDetail}</span></div><span class="tag ${path.missing === 0 ? 'good' : 'warn'}">${path.missing === 0 ? 'Alcanza el baúl' : `Faltan ${formatNumber(path.missing)} unidades`}</span></div><div class="weapon-path">${pathMarkup}</div>${materials}`;
   }
 
   function renderSaveInspector() {
@@ -498,20 +637,83 @@
     root.innerHTML = PIECE_TYPES.map((type) => {
       const chosen = appState.set[type] || '';
       const options = ARMOR.filter((piece) => piece.type === type && piece[appState.armorStyle]);
-      return `<div class="piece-card"><label for="piece-${type}">${ARMOR_BY_TYPE[type]}</label><select id="piece-${type}" data-piece="${type}"><option value="">Elegir pieza…</option>${options.map((piece) => `<option value="${piece.id}" ${String(piece.id) === String(chosen) ? 'selected' : ''}>${escapeHtml(piece.name)} · DEF ${piece.defense} · ${piece.slots} ran.</option>`).join('')}</select></div>`;
+      const selectedPiece = options.find((piece) => String(piece.id) === String(chosen));
+      return `<div class="piece-card"><label for="piece-${type}">${ARMOR_BY_TYPE[type]}</label><select id="piece-${type}" data-piece="${type}"><option value="">Elegir pieza…</option>${options.map((piece) => `<option value="${piece.id}" ${String(piece.id) === String(chosen) ? 'selected' : ''}>${escapeHtml(piece.name)} · DEF ${piece.defense} · ${piece.slots} ran.</option>`).join('')}</select>${renderDecorationControls(type, selectedPiece)}</div>`;
     }).join('');
     root.querySelectorAll('[data-piece]').forEach((select) => select.addEventListener('change', () => {
       const value = select.value;
       if (value === '') delete appState.set[select.dataset.piece];
       else appState.set[select.dataset.piece] = Number(value);
-      renderSetSummary();
+      const piece = ARMOR.find((item) => item.type === select.dataset.piece && String(item.id) === String(value));
+      trimDecorations(select.dataset.piece, piece?.slots || 0);
+      renderSetBuilder();
+    }));
+    root.querySelectorAll('[data-add-decoration]').forEach((button) => button.addEventListener('click', () => {
+      const type = button.dataset.addDecoration;
+      const piece = PIECE_TYPES.includes(type) ? ARMOR.find((item) => item.type === type && String(item.id) === String(appState.set[type])) : null;
+      const rows = appState.decorations[type] || [];
+      if (!piece || rows.includes('')) return;
+      const used = rows.reduce((total, name) => total + (DATA.decorations.find((decoration) => decoration.name === name)?.slotUsage || 0), 0);
+      if (used < piece.slots) {
+        appState.decorations[type] = [...rows, ''];
+        renderSetBuilder();
+      }
+    }));
+    root.querySelectorAll('[data-decoration]').forEach((select) => select.addEventListener('change', () => {
+      const type = select.dataset.decoration;
+      const index = Number(select.dataset.decorationIndex);
+      const piece = ARMOR.find((item) => item.type === type && String(item.id) === String(appState.set[type]));
+      const rows = [...(appState.decorations[type] || [])];
+      const otherSlots = rows.reduce((total, name, rowIndex) => rowIndex === index ? total : total + (DATA.decorations.find((decoration) => decoration.name === name)?.slotUsage || 0), 0);
+      const chosenDecoration = DATA.decorations.find((decoration) => decoration.name === select.value);
+      if (!piece || (chosenDecoration && otherSlots + chosenDecoration.slotUsage > piece.slots)) return;
+      rows[index] = select.value;
+      appState.decorations[type] = rows;
+      renderSetBuilder();
+    }));
+    root.querySelectorAll('[data-remove-decoration]').forEach((button) => button.addEventListener('click', () => {
+      const type = button.dataset.removeDecoration;
+      const rows = [...(appState.decorations[type] || [])];
+      rows.splice(Number(button.dataset.decorationIndex), 1);
+      if (rows.length) appState.decorations[type] = rows;
+      else delete appState.decorations[type];
+      renderSetBuilder();
     }));
     renderSetSummary();
   }
 
+  function trimDecorations(type, maxSlots) {
+    const rows = [...(appState.decorations[type] || [])];
+    const usedSlots = () => rows.reduce((total, name) => total + (DATA.decorations.find((decoration) => decoration.name === name)?.slotUsage || 0), 0);
+    while (rows.length && usedSlots() > maxSlots) rows.pop();
+    if (rows.length) appState.decorations[type] = rows;
+    else delete appState.decorations[type];
+  }
+
+  function renderDecorationControls(type, piece) {
+    if (!piece) return '<div class="decoration-controls"><span>Elige una pieza para asignarle joyas.</span></div>';
+    const rows = appState.decorations[type] || [];
+    const jewels = new Map(DATA.decorations.map((decoration) => [decoration.name, decoration]));
+    const usedSlots = rows.reduce((total, name) => total + (jewels.get(name)?.slotUsage || 0), 0);
+    const rowsMarkup = rows.map((name, index) => {
+      const otherSlots = rows.reduce((total, other, otherIndex) => otherIndex === index ? total : total + (jewels.get(other)?.slotUsage || 0), 0);
+      const available = DATA.decorations.filter((decoration) => decoration.slotUsage <= piece.slots - otherSlots || decoration.name === name).sort((a, b) => a.slotUsage - b.slotUsage || a.name.localeCompare(b.name));
+      const options = available.map((decoration) => {
+        const points = Object.entries(decoration.skillPoints || {}).map(([skill, value]) => `${skill} ${value > 0 ? '+' : ''}${value}`).join(', ');
+        return `<option value="${escapeHtml(decoration.name)}" ${decoration.name === name ? 'selected' : ''}>${escapeHtml(decoration.name)} · ${decoration.slotUsage} ran. · ${escapeHtml(points)}</option>`;
+      }).join('');
+      return `<div class="decoration-row"><select data-decoration="${type}" data-decoration-index="${index}" aria-label="Joya ${index + 1} de ${ARMOR_BY_TYPE[type]}"><option value="">Elegir joya…</option>${options}</select><button type="button" class="decoration-remove" data-remove-decoration="${type}" data-decoration-index="${index}" aria-label="Quitar joya">×</button></div>`;
+    }).join('');
+    const canAdd = usedSlots < piece.slots && !rows.includes('');
+    return `<div class="decoration-controls"><div class="decoration-heading"><span>Joyas · ${usedSlots}/${piece.slots} espacios</span><button type="button" class="decoration-add" data-add-decoration="${type}" ${canAdd ? '' : 'disabled'}>+ Añadir</button></div>${rowsMarkup || '<span class="decoration-empty">Sin joyas</span>'}</div>`;
+  }
+
   function renderSetSummary() {
     const chosen = PIECE_TYPES.map((type) => ARMOR.find((piece) => piece.type === type && piece.id === appState.set[type])).filter(Boolean);
+    const torsoUpCount = chosen.filter((piece) => piece.torsoUp).length;
+    const torsoUpMultiplier = 1 + torsoUpCount;
     const totals = { defense: 0, fireRes: 0, waterRes: 0, iceRes: 0, thunderRes: 0, dragonRes: 0, slots: 0, skills: new Map() };
+    let decorationSlotsUsed = 0;
     for (const piece of chosen) {
       totals.defense += piece.defense || 0;
       totals.fireRes += piece.fireRes || 0;
@@ -520,7 +722,15 @@
       totals.thunderRes += piece.thunderRes || 0;
       totals.dragonRes += piece.dragonRes || 0;
       totals.slots += piece.slots || 0;
-      for (const [skill, points] of Object.entries(piece.skillPoints || {})) totals.skills.set(skill, (totals.skills.get(skill) || 0) + points);
+      const skillMultiplier = piece.type === 'chest' ? torsoUpMultiplier : 1;
+      for (const [skill, points] of Object.entries(piece.skillPoints || {})) totals.skills.set(skill, (totals.skills.get(skill) || 0) + points * skillMultiplier);
+      for (const name of appState.decorations[piece.type] || []) {
+        const decoration = DATA.decorations.find((item) => item.name === name);
+        if (!decoration) continue;
+        decorationSlotsUsed += decoration.slotUsage || 0;
+        const decorationMultiplier = piece.type === 'chest' ? torsoUpMultiplier : 1;
+        for (const [skill, points] of Object.entries(decoration.skillPoints || {})) totals.skills.set(skill, (totals.skills.get(skill) || 0) + points * decorationMultiplier);
+      }
     }
     const active = [];
     for (const [key, points] of totals.skills) {
@@ -531,7 +741,8 @@
     }
     active.sort((a, b) => a.name.localeCompare(b.name));
     const missing = 5 - chosen.length;
-    $('#setResults').innerHTML = `<div class="panel"><div class="panel-heading"><div><h3>Defensa y resistencias</h3><div class="panel-subtitle">${chosen.length}/5 piezas seleccionadas</div></div></div><div class="set-metrics"><div class="set-metric"><strong>${totals.defense}</strong><span>Defensa base</span></div><div class="set-metric"><strong>${totals.slots}</strong><span>Ranuras totales</span></div></div><div class="resist-list">${[['Fuego', totals.fireRes], ['Agua', totals.waterRes], ['Hielo', totals.iceRes], ['Trueno', totals.thunderRes], ['Dragón', totals.dragonRes]].map(([name, value]) => `<div class="resist-chip">${name}<b class="${value > 0 ? 'number-positive' : value < 0 ? 'number-negative' : ''}">${value > 0 ? '+' : ''}${value}</b></div>`).join('')}</div>${missing ? `<div class="warning-inline">Selecciona ${missing} pieza${missing === 1 ? '' : 's'} más para completar el set.</div>` : ''}</div><div class="panel"><div class="panel-heading"><div><h3>Habilidades activadas</h3><div class="panel-subtitle">Puntos combinados de las piezas seleccionadas</div></div></div>${active.length ? `<div class="skill-list">${active.map((skill) => `<div class="skill-item"><strong>${escapeHtml(skill.name)} <span class="subtle">${skill.points > 0 ? '+' : ''}${skill.points} pts</span></strong><span>${escapeHtml(skill.description || '')}</span></div>`).join('')}</div>` : '<div class="skill-empty">Todavía no se activa ninguna habilidad.<br>Combina piezas hasta alcanzar sus umbrales.</div>'}</div>`;
+    const freeSlots = Math.max(0, totals.slots - decorationSlotsUsed);
+    $('#setResults').innerHTML = `<div class="panel"><div class="panel-heading"><div><h3>Defensa y resistencias</h3><div class="panel-subtitle">${chosen.length}/5 piezas seleccionadas</div></div></div><div class="set-metrics"><div class="set-metric"><strong>${totals.defense}</strong><span>Defensa base</span></div><div class="set-metric"><strong>${freeSlots}/${totals.slots}</strong><span>Ranuras libres</span></div></div><div class="resist-list">${[['Fuego', totals.fireRes], ['Agua', totals.waterRes], ['Hielo', totals.iceRes], ['Trueno', totals.thunderRes], ['Dragón', totals.dragonRes]].map(([name, value]) => `<div class="resist-chip">${name}<b class="${value > 0 ? 'number-positive' : value < 0 ? 'number-negative' : ''}">${value > 0 ? '+' : ''}${value}</b></div>`).join('')}</div>${missing ? `<div class="warning-inline">Selecciona ${missing} pieza${missing === 1 ? '' : 's'} más para completar el set.</div>` : ''}</div><div class="panel"><div class="panel-heading"><div><h3>Habilidades activadas</h3><div class="panel-subtitle">Puntos de armadura y joyas combinados</div></div></div>${torsoUpCount ? `<div class="torso-up-note">Torso Up x${torsoUpCount}: las habilidades del pecho y sus joyas cuentan ${torsoUpMultiplier}×.</div>` : ''}${active.length ? `<div class="skill-list">${active.map((skill) => `<div class="skill-item"><strong>${escapeHtml(skill.name)} <span class="subtle">${skill.points > 0 ? '+' : ''}${skill.points} pts</span></strong><span>${escapeHtml(skill.description || '')}</span></div>`).join('')}</div>` : '<div class="skill-empty">Todavía no se activa ninguna habilidad.<br>Combina piezas y joyas hasta alcanzar sus umbrales.</div>'}</div>`;
   }
 
   function renderApp() {
@@ -577,13 +788,44 @@
 
   $('#saveFiles').addEventListener('change', (event) => loadSaves(event.target.files));
   window.mh3Desktop?.onOpenSaveDialog(async () => {
-    const files = await window.mh3Desktop.openSaveFiles();
-    if (files.length) await loadSaves(files);
+    try {
+      const result = await window.mh3Desktop.openSaveFiles();
+      if (result.canceled) return;
+      if (result.error) notify(result.error);
+      else if (result.files?.length) await loadSaves(result.files);
+      else notify('Selecciona archivos llamados data00 a data05.');
+    } catch (error) {
+      notify(`No se pudo abrir el selector de partida: ${error?.message || 'error desconocido'}`);
+    }
   });
   const chooseSaveFolder = async () => {
-    const result = await window.mh3Desktop?.openSaveFolder();
+    let result;
+    try {
+      result = await window.mh3Desktop?.openSaveFolder();
+    } catch (error) {
+      notify(`No se pudo buscar la partida: ${error?.message || 'error desconocido'}`);
+      return;
+    }
     if (!result || result.canceled) return;
-    if (!result.files.length) {
+    if (result.error) {
+      notify(result.error);
+      return;
+    }
+    if (result.candidates?.length) {
+      const selectedIndex = await selectSaveCandidate(result.candidates);
+      if (selectedIndex == null) return;
+      try {
+        result = await window.mh3Desktop.chooseSaveCandidate(selectedIndex);
+      } catch (error) {
+        notify(`No se pudo abrir la carpeta seleccionada: ${error?.message || 'error desconocido'}`);
+        return;
+      }
+      if (result.error) {
+        notify(result.error);
+        return;
+      }
+    }
+    if (!result.files?.length) {
       notify('No encontré archivos data00 a data05 en esa carpeta. Elige saves, la carpeta del juego o la carpeta nocopy.');
       return;
     }
@@ -599,6 +841,32 @@
   });
   $('#monsterSearch').addEventListener('input', (event) => { appState.monsterSearch = event.target.value; const profile = currentProfile(); if (profile) renderHunts(profile); });
   $('#itemSearch').addEventListener('input', (event) => { appState.itemSearch = event.target.value; const profile = currentProfile(); if (profile) renderMaterials(profile); });
+  $('#weaponClass').addEventListener('change', (event) => {
+    appState.weaponClass = event.target.value;
+    appState.weaponTarget = '';
+    appState.weaponStart = '';
+    appState.weaponRoute = 0;
+    const profile = currentProfile();
+    if (profile) renderWeaponPlanner(profile);
+  });
+  $('#weaponTarget').addEventListener('change', (event) => {
+    appState.weaponTarget = event.target.value;
+    appState.weaponStart = '';
+    appState.weaponRoute = 0;
+    const profile = currentProfile();
+    if (profile) renderWeaponPlanner(profile);
+  });
+  $('#weaponStart').addEventListener('change', (event) => {
+    appState.weaponStart = event.target.value;
+    appState.weaponRoute = 0;
+    const profile = currentProfile();
+    if (profile) renderWeaponPlanner(profile);
+  });
+  $('#weaponRoute').addEventListener('change', (event) => {
+    appState.weaponRoute = Number(event.target.value) || 0;
+    const profile = currentProfile();
+    if (profile) renderWeaponPlanner(profile);
+  });
   $('#villageManual').addEventListener('change', (event) => {
     const control = event.target.closest('[data-manual]');
     if (control) setManual(control.dataset.manual, control.checked);
@@ -607,7 +875,8 @@
     appState.armorStyle = button.dataset.style;
     $$('.style-button').forEach((item) => item.classList.toggle('active', item === button));
     appState.set = {};
+    appState.decorations = {};
     renderSetBuilder();
   }));
-  $('#clearSet').addEventListener('click', () => { appState.set = {}; renderSetBuilder(); });
+  $('#clearSet').addEventListener('click', () => { appState.set = {}; appState.decorations = {}; renderSetBuilder(); });
 })();

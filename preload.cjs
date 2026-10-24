@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('mh3Desktop', {
   openSaveFiles: () => ipcRenderer.invoke('save:open-dialog'),
   openSaveFolder: () => ipcRenderer.invoke('save:open-folder'),
+  chooseSaveCandidate: (index) => ipcRenderer.invoke('save:choose-candidate', index),
   onOpenSaveDialog: (callback) => {
     const listener = () => callback();
     ipcRenderer.on('save:request-open-dialog', listener);
