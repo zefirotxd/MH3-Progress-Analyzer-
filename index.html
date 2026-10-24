@@ -19,7 +19,7 @@
 
       <div class="save-box">
         <div class="eyebrow">PARTIDA LOCAL</div>
-        <div id="saveStatus" class="save-status"><span class="status-dot"></span>Sin partida cargada</div>
+        <div id="saveStatus" class="save-status" role="status" aria-live="polite"><span class="status-dot"></span>Sin partida cargada</div>
         <label class="button button-primary file-button" for="saveFiles">Abrir archivos data00–05</label>
         <input id="saveFiles" type="file" multiple>
         <button class="button button-secondary folder-button" type="button" data-open-save-folder>Buscar saves en carpeta</button>
@@ -65,6 +65,7 @@
           <button class="button button-secondary folder-button" type="button" data-open-save-folder>Buscar carpeta de saves</button>
         </div>
         <div class="empty-foot"><span class="checkmark">✓</span> La partida se procesa localmente y nunca se modifica.</div>
+        <div id="emptyDiagnostics" class="empty-diagnostics hidden" role="status" aria-live="polite"></div>
       </div>
 
       <div id="appContent" class="content hidden">
@@ -132,14 +133,15 @@
         </section>
       </div>
 
-      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.3.0-preview.1</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
+      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.3.0-preview.2</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
     </main>
   </div>
   <dialog id="saveCandidateDialog" class="save-candidate-dialog">
     <form method="dialog">
-      <div class="eyebrow">VARIAS PARTIDAS ENCONTRADAS</div>
-      <h2>Elige la carpeta correcta</h2>
-      <p>Encontré más de una carpeta con archivos data00–data05. Selecciona una para evitar mezclar o abrir una partida distinta.</p>
+      <div id="saveCandidateEyebrow" class="eyebrow">VARIAS PARTIDAS ENCONTRADAS</div>
+      <h2 id="saveCandidateTitle">Elige la carpeta correcta</h2>
+      <p id="saveCandidateIntro">Encontré más de una carpeta con archivos data00–data05. Selecciona una para evitar mezclar o abrir una partida distinta.</p>
+      <p id="saveScanLimitNote" class="scan-limit-note hidden"></p>
       <label for="saveCandidateSelect">Ubicación</label>
       <select id="saveCandidateSelect"></select>
       <div class="candidate-actions">

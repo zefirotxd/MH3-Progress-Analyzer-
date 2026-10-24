@@ -4,7 +4,7 @@ App local de escritorio para consultar progreso de Monster Hunter Tri leyendo un
 
 ## Instalar y abrir
 
-Ejecuta `MH3 Progress Analyzer Setup 0.3.0-preview.1.exe`. El instalador crea o restaura el acceso del Escritorio y del menú Inicio y luego abre la app. También puedes abrirla desde esos accesos cuando quieras. Pulsa **Buscar saves en carpeta** y selecciona la carpeta `saves` del juego, la instalación de OceanTriRecomp o directamente `saves/nand/title/00010000/524d4850/data/nocopy`. La app busca `data00` a `data05` en esa ruta; si encuentra más de una carpeta, pregunta cuál cargar. También puedes abrir los archivos individualmente con **Archivo → Abrir archivos de partida…** (`Ctrl+O`).
+Ejecuta `MH3 Progress Analyzer Setup 0.3.0-preview.2.exe`. El instalador crea o restaura el acceso del Escritorio y del menú Inicio y luego abre la app. También puedes abrirla desde esos accesos cuando quieras. Pulsa **Buscar saves en carpeta** y selecciona la carpeta `saves` del juego, la instalación de OceanTriRecomp o directamente `saves/nand/title/00010000/524d4850/data/nocopy`. La búsqueda es asíncrona y limitada para evitar congelar la app; si encuentra varias carpetas, pregunta cuál cargar. Si llega al límite, selecciona directamente `nocopy`. También puedes abrir los archivos individualmente con **Archivo → Abrir archivos de partida…** (`Ctrl+O`).
 
 La app valida tamaño, marcador `FILE1`–`FILE6`, estado activo y checksum de cada archivo antes de leer los saves. Omite archivos válidos pero inactivos. La nueva sección **Inspector de save** muestra qué archivos y espacios de cazador se reconocieron y los valores que se están interpretando. No modifica ni sube los saves; los analiza en el equipo local.
 

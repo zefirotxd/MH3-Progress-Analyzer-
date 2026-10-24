@@ -12,6 +12,15 @@ const MAX_SAVE_FILE_SIZE = 1024 * 1024;
 function readSaveFiles(filePaths) {
   try {
     const paths = filePaths.filter((filePath) => /^data0[0-5]$/i.test(path.basename(filePath)));
+    const nameCounts = new Map();
+    for (const filePath of paths) {
+      const name = path.basename(filePath).toLowerCase();
+      nameCounts.set(name, (nameCounts.get(name) || 0) + 1);
+    }
+    const duplicates = [...nameCounts].filter(([, count]) => count > 1).map(([name]) => name);
+    if (duplicates.length) {
+      return { error: `Hay archivos repetidos (${duplicates.join(', ')}). Selecciona una sola carpeta de partida para evitar mezclar saves.` };
+    }
     const files = paths.map((filePath) => {
       const stat = fs.statSync(filePath);
       if (!stat.isFile()) throw new Error(`${path.basename(filePath)} no es un archivo.`);
@@ -110,6 +119,7 @@ ipcMain.handle('save:open-dialog', async () => {
 });
 
 ipcMain.handle('save:open-folder', async () => {
+  pendingSaveCandidates = [];
   const result = await dialog.showOpenDialog(mainWindow, {
     title: 'Selecciona la carpeta saves o nocopy del juego',
     buttonLabel: 'Buscar partida aquí',
@@ -118,13 +128,16 @@ ipcMain.handle('save:open-folder', async () => {
   if (result.canceled || !result.filePaths[0]) return { canceled: true, files: [] };
 
   const folder = result.filePaths[0];
-  const candidates = findSaveCandidates(folder);
-  if (!candidates.length) return { canceled: false, folder, candidates: [], files: [] };
-  if (candidates.length > 1) {
+  const scan = await findSaveCandidates(folder);
+  const { candidates } = scan;
+  if (!candidates.length) return { canceled: false, folder, candidates: [], files: [], scanLimited: scan.scanLimited };
+  if (candidates.length > 1 || scan.scanLimited) {
     pendingSaveCandidates = candidates;
     return {
       canceled: false,
       folder,
+      scanLimited: scan.scanLimited,
+      scannedDirectories: scan.scannedDirectories,
       candidates: candidates.map((candidate, index) => ({
         index,
         folder: candidate.folder,
@@ -133,7 +146,7 @@ ipcMain.handle('save:open-folder', async () => {
     };
   }
   const candidate = candidates[0];
-  return { canceled: false, folder: candidate.folder, ...readSaveFiles(candidate.files) };
+  return { canceled: false, folder: candidate.folder, scanLimited: false, ...readSaveFiles(candidate.files) };
 });
 
 ipcMain.handle('save:choose-candidate', async (_event, index) => {

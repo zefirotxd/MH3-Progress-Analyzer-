@@ -184,6 +184,16 @@
       notify('No encontré archivos data00 a data05 en la selección.');
       return;
     }
+    const fileNameCounts = new Map();
+    for (const file of files) {
+      const name = file.name.toLowerCase();
+      fileNameCounts.set(name, (fileNameCounts.get(name) || 0) + 1);
+    }
+    const duplicates = [...fileNameCounts].filter(([, count]) => count > 1).map(([name]) => name);
+    if (duplicates.length) {
+      notify(`Hay archivos repetidos (${duplicates.join(', ')}). Selecciona los de una sola carpeta para no mezclar partidas.`);
+      return;
+    }
     const nextProfiles = [];
     const errors = [];
     const diagnostics = [];
@@ -266,18 +276,28 @@
       if (!selectedNames.has(name)) diagnostics.push({ name, status: 'No incluido en la selección', selected: false, slots: [] });
     }
     diagnostics.sort((a, b) => a.name.localeCompare(b.name));
-    appState.files = diagnostics;
-    appState.profiles = nextProfiles;
-    appState.selected = 0;
     if (!nextProfiles.length) {
+      if (appState.profiles.length) {
+        notify(`No se encontró un cazador válido. Se conserva la partida que ya estaba abierta.${errors.length ? ` ${errors.join(' · ')}` : ''}`);
+        return;
+      }
+      appState.files = diagnostics;
+      appState.profiles = [];
+      appState.selected = 0;
       $('#saveStatus').classList.remove('loaded');
       $('#saveStatus').innerHTML = '<span class="status-dot"></span>No se reconoció ningún cazador válido';
       $('#appContent').classList.add('hidden');
       $('#emptyState').classList.remove('hidden');
+      renderEmptyDiagnostics(diagnostics);
       notify(errors.length ? errors.join(' · ') : `No hay cazadores activos en los archivos seleccionados${inactiveFiles ? ` (${inactiveFiles} archivos están vacíos)` : ''}.`);
       return;
     }
+    appState.files = diagnostics;
+    appState.profiles = nextProfiles;
+    appState.selected = 0;
     $('#emptyState').classList.add('hidden');
+    $('#emptyDiagnostics').classList.add('hidden');
+    $('#emptyDiagnostics').textContent = '';
     $('#appContent').classList.remove('hidden');
     $('#saveStatus').classList.add('loaded');
     $('#saveStatus').innerHTML = `<span class="status-dot"></span>${nextProfiles.length} cazador${nextProfiles.length === 1 ? '' : 'es'} reconocido${nextProfiles.length === 1 ? '' : 's'}`;
@@ -286,12 +306,24 @@
     if (errors.length) notify(`Se cargaron los archivos válidos. ${errors.join(' · ')}`);
   }
 
+  async function safelyLoadSaves(fileList) {
+    try {
+      await loadSaves(fileList);
+    } catch (error) {
+      console.error('No se pudo analizar la selección de saves', error);
+      notify(`No se pudo analizar esta selección: ${error?.message || 'datos inesperados'}. El análisis actual se conserva.`);
+    }
+  }
+
   function notify(message) {
     let toast = $('#toast');
     if (!toast) {
       toast = document.createElement('div');
       toast.id = 'toast';
       toast.className = 'toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      toast.setAttribute('aria-atomic', 'true');
       document.body.append(toast);
     }
     toast.textContent = message;
@@ -300,10 +332,34 @@
     notify.timer = setTimeout(() => toast.classList.remove('show'), 5200);
   }
 
-  function selectSaveCandidate(candidates) {
+  function renderEmptyDiagnostics(files) {
+    const panel = $('#emptyDiagnostics');
+    const rows = files.map((file) => {
+      const details = [];
+      if (file.size != null) details.push(`${formatNumber(file.size)} / ${formatNumber(FILE_SIZE)} bytes`);
+      if (file.magic && file.magic !== '—') details.push(`firma ${file.magic}`);
+      if (file.checksumOk != null) details.push(file.checksumOk ? 'checksum correcto' : 'checksum no válido');
+      return `<div class="empty-diagnostic-row"><strong>${escapeHtml(file.name)}</strong><span>${escapeHtml(file.status)}</span>${details.length ? `<small>${escapeHtml(details.join(' · '))}</small>` : ''}</div>`;
+    }).join('');
+    panel.innerHTML = `<strong>Resultado de la lectura</strong><div class="empty-diagnostic-list">${rows || '<div class="empty-diagnostic-row">No hay archivos seleccionados para mostrar.</div>'}</div>`;
+    panel.classList.remove('hidden');
+  }
+
+  function selectSaveCandidate(candidates, scanLimited, scannedDirectories) {
     const dialog = $('#saveCandidateDialog');
     const select = $('#saveCandidateSelect');
+    const limitNote = $('#saveScanLimitNote');
+    const hasOneLimitedCandidate = scanLimited && candidates.length === 1;
+    $('#saveCandidateEyebrow').textContent = hasOneLimitedCandidate ? 'BÚSQUEDA LIMITADA' : 'VARIAS PARTIDAS ENCONTRADAS';
+    $('#saveCandidateTitle').textContent = hasOneLimitedCandidate ? 'Confirma la carpeta encontrada' : 'Elige la carpeta correcta';
+    $('#saveCandidateIntro').textContent = hasOneLimitedCandidate
+      ? 'Encontré esta carpeta antes de alcanzar el límite del escaneo. Confirma que corresponde a tu partida.'
+      : 'Encontré más de una carpeta con archivos data00–data05. Selecciona una para evitar mezclar o abrir una partida distinta.';
     select.innerHTML = candidates.map((candidate) => `<option value="${candidate.index}">${escapeHtml(candidate.folder)} · ${candidate.fileCount}/6 archivos</option>`).join('');
+    limitNote.textContent = scanLimited
+      ? `La búsqueda llegó a su límite tras revisar ${formatNumber(scannedDirectories || 0)} carpetas y la lista puede estar incompleta. Si no aparece tu partida, selecciona su carpeta nocopy directamente y vuelve a buscar.`
+      : '';
+    limitNote.classList.toggle('hidden', !scanLimited);
     return new Promise((resolve) => {
       dialog.addEventListener('close', () => resolve(dialog.returnValue === 'choose' ? Number(select.value) : null), { once: true });
       dialog.showModal();
@@ -368,8 +424,6 @@
     const villageStatus = village ? stageState(profile, village, true) : null;
     const monsters = monsterProgress(profile);
     const completeAll = [...profile.completed].length;
-    const allVillage = DATA.quests.filter((quest) => quest.region === 'Village');
-    const villageDone = allVillage.filter((quest) => profile.completed.has(quest.id)).length;
 
     let headline = 'Ya completaste las urgentes principales de Loc Lac.';
     let subline = 'Puedes seguir subiendo RC; las misiones posdesbloqueo continúan disponibles.';
@@ -381,11 +435,13 @@
       tags = `<span class="tag ${missingOnline ? 'warn' : 'good'}">${missingOnline ? `${missingOnline} misión${missingOnline === 1 ? '' : 'es'} clave pendiente${missingOnline === 1 ? '' : 's'}` : 'Claves completas'}</span><span class="tag ${onlineStatus.rankReady ? 'good' : 'warn'}">${onlineStatus.rankReady ? `RC ${online.gate} alcanzado` : `Meta RC ${online.gate}`}</span>`;
     }
     $('#heroObjective').innerHTML = `<div class="eyebrow">TU SIGUIENTE OBJETIVO</div><h2>${escapeHtml(headline)}</h2><p>${escapeHtml(subline)}</p><div class="hero-tags">${tags}${village ? `<span class="tag">Moga: ${escapeHtml(village.urgentName)}</span>` : '<span class="tag good">Historia de Moga completa</span>'}</div>`;
+    const villageStoryIds = [...new Set(VILLAGE_STEPS.flatMap((step) => [...step.keys, step.urgent]))];
+    const villageStoryDone = villageStoryIds.filter((id) => profile.completed.has(id)).length;
     $('#summaryStats').innerHTML = [
       ['Rango actual', `RC ${profile.rank}`, `Guardado: ${escapeHtml(profile.fileName)} · cazador ${profile.slot + 1}`, true],
       ['Puntos de rango', formatNumber(profile.points), `${formatNumber(profile.zenny)} zenny`, false],
       ['Misiones registradas', formatNumber(completeAll), `${DATA.reference.questIds.length} IDs que el save puede registrar`, false],
-      ['Progreso de Moga', `${villageDone}/${allVillage.length}`, `${monsters.length} monstruos con objetivo completado`, false],
+      ['Historia principal de Moga', `${villageStoryDone}/${villageStoryIds.length}`, `${monsters.length} especies con objetivos completados`, false],
     ].map(([label, value, detail, accent]) => `<article class="stat-card ${accent ? 'accent' : ''}"><div class="stat-label">${label}</div><div class="stat-value">${value}</div><div class="stat-detail">${detail}</div></article>`).join('');
 
     const nextRank = Math.min(999, Math.max(2, profile.rank + 1));
@@ -769,7 +825,12 @@
 
   function showView(view, updateTitle = true) {
     appState.view = view;
-    $$('.nav-item').forEach((button) => button.classList.toggle('active', button.dataset.view === view));
+    $$('.nav-item').forEach((button) => {
+      const active = button.dataset.view === view;
+      button.classList.toggle('active', active);
+      if (active) button.setAttribute('aria-current', 'page');
+      else button.removeAttribute('aria-current');
+    });
     $$('.view').forEach((section) => section.classList.toggle('active', section.id === `view-${view}`));
     const names = {
       dashboard: ['PANEL DEL CAZADOR', 'Tu progreso, de un vistazo'],
@@ -786,13 +847,13 @@
     }
   }
 
-  $('#saveFiles').addEventListener('change', (event) => loadSaves(event.target.files));
+  $('#saveFiles').addEventListener('change', (event) => safelyLoadSaves(event.target.files));
   window.mh3Desktop?.onOpenSaveDialog(async () => {
     try {
       const result = await window.mh3Desktop.openSaveFiles();
       if (result.canceled) return;
       if (result.error) notify(result.error);
-      else if (result.files?.length) await loadSaves(result.files);
+      else if (result.files?.length) await safelyLoadSaves(result.files);
       else notify('Selecciona archivos llamados data00 a data05.');
     } catch (error) {
       notify(`No se pudo abrir el selector de partida: ${error?.message || 'error desconocido'}`);
@@ -811,8 +872,14 @@
       notify(result.error);
       return;
     }
+    if (!result.files?.length && !result.candidates?.length) {
+      notify(result.scanLimited
+        ? `La búsqueda alcanzó su límite tras revisar ${formatNumber(result.scannedDirectories || 0)} carpetas y no encontró archivos. Selecciona directamente la carpeta nocopy para buscar en una ruta más pequeña.`
+        : `Revisé ${formatNumber(result.scannedDirectories || 0)} carpetas y no encontré archivos data00 a data05. Elige saves, la carpeta del juego o la carpeta nocopy.`);
+      return;
+    }
     if (result.candidates?.length) {
-      const selectedIndex = await selectSaveCandidate(result.candidates);
+      const selectedIndex = await selectSaveCandidate(result.candidates, result.scanLimited, result.scannedDirectories);
       if (selectedIndex == null) return;
       try {
         result = await window.mh3Desktop.chooseSaveCandidate(selectedIndex);
@@ -825,11 +892,7 @@
         return;
       }
     }
-    if (!result.files?.length) {
-      notify('No encontré archivos data00 a data05 en esa carpeta. Elige saves, la carpeta del juego o la carpeta nocopy.');
-      return;
-    }
-    await loadSaves(result.files);
+    await safelyLoadSaves(result.files || []);
   };
   document.querySelectorAll('[data-open-save-folder]').forEach((button) => button.addEventListener('click', chooseSaveFolder));
   window.mh3Desktop?.onOpenSaveFolder(chooseSaveFolder);

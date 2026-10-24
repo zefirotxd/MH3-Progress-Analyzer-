@@ -3,7 +3,11 @@
 ## Landed in the current working tree
 
 - Show all save folders found under a selected root and ask the user to choose when more than one candidate exists. Never merge separate folders.
-- Report file access errors and skip oversized inputs before allocating their contents.
+- Scan folders asynchronously with depth, time, directory and candidate limits; explain when the scan was bounded.
+- Report file access errors, reject duplicate data filenames and skip oversized inputs before allocating their contents.
+- Preserve the currently loaded analysis when a new selection is invalid, and show per-file diagnostics in the initial empty state.
+- Calculate dashboard Moga story progress from the main-chain key and urgent quests instead of all catalogued village quests.
+- Add keyboard focus indicators, navigation state announcements and reduced-motion support.
 - Plan craft and upgrade routes for the six blademaster weapon classes. Compare all route materials with the selected hunter's item box and rank routes by missing quantities.
 - Let the user specify a manually owned starting weapon; the save parser does not claim to know the hunter's equipment.
 - Add decorations to armor pieces, enforce each piece's slot budget and include their skill points in the set summary.

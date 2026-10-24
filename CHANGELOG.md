@@ -1,12 +1,16 @@
 # Changelog
 
-## 0.3.0-preview.1 · compilación local
+## 0.3.0-preview.2 · compilación local
 
 - Add weapon crafting and upgrade route planning for all six MH3 blademaster classes, including material shortfalls against the selected hunter's item box.
 - Add decoration placement with per-piece slot limits and include decoration points in the set skill simulation.
 - Apply Torso Up stacking to chest armor and decorations in the armor-set skill simulator.
 - Let the save-folder scan list multiple candidates and ask which one to load instead of silently taking the first match.
 - Return clear errors when a selected save file cannot be read, and reject oversized files before reading them into memory.
+- Reject duplicate `data00`–`data05` names before parsing so files from different folders cannot be combined.
+- Keep the last valid analysis visible after a failed import, and show a file-by-file result when the initial save is invalid.
+- Make save discovery asynchronous and bounded, with a warning when the selected folder is too broad to scan completely.
+- Calculate dashboard Moga progress from story keys and urgent quests, and improve keyboard and reduced-motion accessibility.
 - Add an explicit upstream catalog sync command while keeping normal builds offline and reproducible from the checked-in JSON snapshot.
 
 ## 0.2.0
