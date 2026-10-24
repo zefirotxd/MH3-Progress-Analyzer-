@@ -92,6 +92,12 @@
   };
   const QUEST_REGION_LABELS = { Village: 'Aldea de Moga', City: 'Loc Lac' };
   const QUEST_RANK_LABELS = { Low: 'Bajo', High: 'Alto' };
+  const MONSTER_TYPE_LABELS = {
+    'bird wyvern': 'Ave wyvern', 'brute wyvern': 'Wyvern bruto', 'elder dragon': 'Dragón anciano',
+    fish: 'Pez', 'flying wyvern': 'Wyvern volador', herbivore: 'Herbívoro', leviathan: 'Leviatán',
+    lynian: 'Lynian', neopteron: 'Neopterón', 'piscine wyvern': 'Wyvern piscino',
+  };
+  const STATUS_LABELS = { poison: 'Veneno', paralysis: 'Parálisis', sleep: 'Sueño', stun: 'Aturdimiento', exhaust: 'Cansancio' };
 
   const ONLINE_STAGES = [
     { gate: 8, stars: '1★', urgent: 0x36b0, urgentName: 'Leading the Charge', nextStars: '2★', keys: [0x2711, 0x2714, 0x2715, 0x2718, 0x2716] },
@@ -208,7 +214,7 @@
   function forgeGoalKey(type, targetId, startId, weaponIds) {
     return `${type}:${targetId}:${startId ?? 'new'}:${weaponIds.join('>')}`;
   }
-  const appState = { profiles: [], files: [], selected: 0, view: 'dashboard', monsterSearch: '', itemSearch: '', questSearch: '', questRegion: 'all', questRank: 'all', questGoal: 'all', questProgression: 'all', questStatus: 'all', armorStyle: 'blade', set: {}, decorations: {}, weaponClass: WEAPON_CLASSES[0] || '', weaponTarget: '', weaponStart: '', weaponRoute: 0, weaponShoppingList: loadWeaponShoppingList(), progressSnapshots: [], historyBaselineId: '', savedSetPresets: [] };
+  const appState = { profiles: [], files: [], selected: 0, view: 'dashboard', monsterSearch: '', itemSearch: '', questSearch: '', questRegion: 'all', questRank: 'all', questLocation: 'all', questGoal: 'all', questProgression: 'all', questStatus: 'all', materialSourceSearch: '', materialSourceRank: 'all', materialSourceItemId: null, armorStyle: 'blade', set: {}, decorations: {}, weaponClass: WEAPON_CLASSES[0] || '', weaponTarget: '', weaponStart: '', weaponRoute: 0, weaponShoppingList: loadWeaponShoppingList(), progressSnapshots: [], historyBaselineId: '', savedSetPresets: [] };
   const rankThreshold = (rank) => {
     const target = Math.max(0, Math.floor(rank));
     if (target === 0) return 0;
@@ -691,11 +697,23 @@
   }
 
   function renderHunts(profile) {
-    const monsters = monsterProgress(profile);
+    const progress = new Map(monsterProgress(profile).map((monster) => [monster.id, monster.count]));
     const query = appState.monsterSearch.trim().toLocaleLowerCase('es');
-    const filtered = monsters.filter((monster) => !query || monster.name.toLocaleLowerCase('es').includes(query));
-    $('#monsterCount').textContent = `${filtered.length} de ${monsters.length} monstruos`;
-    $('#monsterGrid').innerHTML = filtered.length ? filtered.map((monster) => `<article class="monster-card"><div><strong>${escapeHtml(monster.name)}</strong><small>${monster.count} misión${monster.count === 1 ? '' : 'es'} completada${monster.count === 1 ? '' : 's'} como objetivo · ${hex(monster.id)}</small></div><span class="monster-count">${monster.count}</span></article>`).join('') : '<div class="table-empty">No aparecen objetivos de monstruo en las misiones completadas que puede leer el save.</div>';
+    const allMonsters = [...DATA.monsters].sort((a, b) => a.name.localeCompare(b.name));
+    const filtered = allMonsters.filter((monster) => !query
+      || `${monster.name} ${monster.type || ''}`.toLocaleLowerCase('es').includes(query));
+    const tracked = filtered.filter((monster) => progress.has(monster.id)).length;
+    $('#monsterCount').textContent = `${filtered.length} de ${allMonsters.length} especies · ${tracked} con objetivos registrados como completados`;
+    const percent = (value) => `${Math.round(Number(value) <= 1 ? Number(value) * 100 : Number(value))}%`;
+    const damageTypes = [['cut', 'Corte'], ['impact', 'Impacto'], ['gun', 'Disparo'], ['fire', 'Fuego'], ['water', 'Agua'], ['thunder', 'Trueno'], ['ice', 'Hielo'], ['dragon', 'Dragón']];
+    const cards = filtered.map((monster) => {
+      const states = monster.monsterStates || [];
+      const hitzoneMarkup = states.length ? states.map((state) => `<div class="hitzone-state"><strong>${escapeHtml(state.name)}</strong><div class="table-wrap hitzone-table-wrap"><table><thead><tr><th>Zona</th>${damageTypes.map(([, label]) => `<th>${label}</th>`).join('')}</tr></thead><tbody>${(state.hitzones || []).map((zone) => `<tr><td>${escapeHtml(zone.name)}</td>${damageTypes.map(([key]) => `<td>${zone.values?.[key] == null ? '—' : percent(zone.values[key])}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`).join('') : '<div class="hitzone-empty">El catálogo no trae zonas de daño para esta especie.</div>';
+      const statusRows = Object.entries(monster.status || {}).map(([key, status]) => `<div class="status-chip"><strong>${escapeHtml(STATUS_LABELS[key] || key)}</strong><span>Inicio ${status.tolerance?.initial == null ? '—' : formatNumber(status.tolerance.initial)} · máxima ${status.tolerance?.max == null ? '—' : formatNumber(status.tolerance.max)}${status.duration ? ` · ${formatNumber(status.duration)} s` : ''}</span></div>`).join('');
+      const count = progress.get(monster.id) || 0;
+      return `<article class="monster-card"><div class="monster-card-header"><div><strong>${escapeHtml(monster.name)}</strong><small>${escapeHtml(MONSTER_TYPE_LABELS[monster.type] || monster.type || 'Especie')} · ${count ? `${count} misión${count === 1 ? '' : 'es'} completada${count === 1 ? '' : 's'} con esta especie como objetivo` : 'Sin objetivo completado registrado'} · ${hex(monster.id)}</small></div><span class="monster-count">${formatNumber(count)}</span></div><details class="monster-details"><summary>Preparación: hitzones y estados</summary><div class="monster-guide-body"><p class="monster-guide-legend">Porcentajes catalogados por zona; números más altos representan mayor vulnerabilidad según la tabla.</p>${hitzoneMarkup}${statusRows ? `<h4>Tolerancia a estados</h4><div class="status-grid">${statusRows}</div>` : '<div class="hitzone-empty">El catálogo no incluye tolerancias de estado para esta especie.</div>'}</div></details></article>`;
+    }).join('');
+    $('#monsterGrid').innerHTML = cards || '<div class="table-empty">No hay especies que coincidan con la búsqueda.</div>';
   }
 
   function questTargetSummary(quest) {
@@ -721,6 +739,7 @@
     const filtered = DATA.quests.filter((quest) => {
       if (appState.questRegion !== 'all' && quest.region !== appState.questRegion) return false;
       if (appState.questRank !== 'all' && quest.rank !== appState.questRank) return false;
+      if (appState.questLocation !== 'all' && quest.location !== appState.questLocation) return false;
       if (appState.questGoal !== 'all' && quest.goal !== appState.questGoal) return false;
       const progressionRoles = QUEST_PROGRESSION_ROLES.get(quest.id) || new Set();
       if (appState.questProgression === 'other' && progressionRoles.size > 0) return false;
@@ -737,6 +756,7 @@
         quest.region,
         QUEST_RANK_LABELS[quest.rank] || quest.rank,
         quest.rank,
+        quest.location,
         QUEST_TYPE_LABELS[quest.type] || quest.type,
         quest.type,
         QUEST_GOAL_LABELS[quest.goal] || quest.goal,
@@ -744,6 +764,7 @@
         hex(quest.id),
         [...progressionRoles].map((role) => QUEST_PROGRESSION_LABELS[role]),
         questTargetSummary(quest),
+        ...(quest.secondaryRewards || []).map((reward) => ITEM_NAMES.get(reward.itemId)),
       ].join(' ').toLocaleLowerCase('es');
       return searchable.includes(search);
     }).sort((a, b) => {
@@ -759,7 +780,15 @@
       const status = questSaveStatus(profile, quest);
       const target = questTargetSummary(quest);
       const progressionTags = [...(QUEST_PROGRESSION_ROLES.get(quest.id) || [])].map((role) => `<span class="quest-role-tag">${escapeHtml(QUEST_PROGRESSION_LABELS[role])}</span>`).join('');
-      return `<article class="quest-catalog-card"><div class="quest-catalog-top"><div><h3>${escapeHtml(quest.name)}</h3><div class="quest-catalog-tags"><span>${escapeHtml(QUEST_REGION_LABELS[quest.region] || quest.region)}</span><span>Rango ${escapeHtml(QUEST_RANK_LABELS[quest.rank] || quest.rank)}</span>${progressionTags}</div></div><span class="quest-save-status ${status.className}">${status.label}</span></div><div class="quest-catalog-details"><div><small>Tipo</small><strong>${escapeHtml(QUEST_TYPE_LABELS[quest.type] || quest.type || 'Sin tipo')}</strong></div><div><small>Objetivo registrado</small><strong>${escapeHtml(QUEST_GOAL_LABELS[quest.goal] || quest.goal || 'Sin objetivo')}</strong></div><div class="quest-target-detail"><small>Objetivos</small><strong>${escapeHtml(target)}</strong></div></div><div class="quest-catalog-id">ID ${hex(quest.id)}${QUEST_INDEX.has(quest.id) ? ' · bandera compatible con el save' : ' · sin bandera compatible conocida'}</div></article>`;
+      const economy = [
+        quest.location ? `Zona: ${quest.location}` : '',
+        quest.contract != null ? `Contrato: ${formatNumber(quest.contract)} z` : '',
+        quest.reward != null ? `Pago: ${formatNumber(quest.reward)} z` : '',
+        quest.hrp != null ? `${formatNumber(quest.hrp)} HRP` : '',
+      ].filter(Boolean).join(' · ');
+      const rewards = [...(quest.secondaryRewards || [])].sort((a, b) => b.chance - a.chance).slice(0, 4);
+      const rewardMarkup = rewards.length ? `<div class="quest-reward-detail"><small>Tabla secundaria</small><strong>${rewards.map((reward) => `${escapeHtml(ITEM_NAMES.get(reward.itemId) || `Objeto ${hex(reward.itemId)}`)}${reward.count > 1 ? ` ×${formatNumber(reward.count)}` : ''} · ${formatNumber(reward.chance)}%`).join(' · ')}${quest.secondaryRewards.length > rewards.length ? ` · +${quest.secondaryRewards.length - rewards.length} resultados` : ''}</strong></div>` : '';
+      return `<article class="quest-catalog-card"><div class="quest-catalog-top"><div><h3>${escapeHtml(quest.name)}</h3><div class="quest-catalog-tags"><span>${escapeHtml(QUEST_REGION_LABELS[quest.region] || quest.region)}</span><span>Rango ${escapeHtml(QUEST_RANK_LABELS[quest.rank] || quest.rank)}</span>${progressionTags}</div></div><span class="quest-save-status ${status.className}">${status.label}</span></div><div class="quest-catalog-details"><div><small>Tipo</small><strong>${escapeHtml(QUEST_TYPE_LABELS[quest.type] || quest.type || 'Sin tipo')}</strong></div><div><small>Objetivo registrado</small><strong>${escapeHtml(QUEST_GOAL_LABELS[quest.goal] || quest.goal || 'Sin objetivo')}</strong></div><div class="quest-target-detail"><small>Objetivos</small><strong>${escapeHtml(target)}</strong></div>${economy ? `<div class="quest-economy-detail"><small>Datos de misión</small><strong>${escapeHtml(economy)}</strong></div>` : ''}${rewardMarkup}</div><div class="quest-catalog-id">ID ${hex(quest.id)}${QUEST_INDEX.has(quest.id) ? ' · bandera compatible con el save' : ' · sin bandera compatible conocida'}</div></article>`;
     }).join('') : '<div class="quest-catalog-empty">No hay misiones con estos filtros. Prueba otra zona, rango u objetivo.</div>';
   }
 
@@ -775,14 +804,125 @@
     const rows = [...profile.itemCounts.entries()].map(([id, count]) => ({ id, count, name: ITEM_NAMES.get(id) || `Objeto #${id}` })).sort((a, b) => a.name.localeCompare(b.name));
     const filtered = rows.filter((item) => !query || item.name.toLocaleLowerCase('es').includes(query));
     $('#itemCount').textContent = `${filtered.length} de ${totalEntries} objetos con cantidad`;
-    $('#itemRows').innerHTML = filtered.length ? filtered.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td class="numeric">${formatNumber(item.count)}</td></tr>`).join('') : `<tr><td class="table-empty" colspan="2">${query ? 'No encontré objetos con esa búsqueda.' : 'El baúl no tiene objetos con cantidad positiva.'}</td></tr>`;
+    $('#itemRows').innerHTML = filtered.length ? filtered.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td class="numeric">${formatNumber(item.count)}</td><td><button type="button" class="material-guide-link" data-material-source-pick="${item.id}">Ver fuentes</button></td></tr>`).join('') : `<tr><td class="table-empty" colspan="3">${query ? 'No encontré objetos con esa búsqueda.' : 'El baúl no tiene objetos con cantidad positiva.'}</td></tr>`;
     $('#requestPanel').innerHTML = REQUESTS.map((request) => `<div class="request-block"><h3>${escapeHtml(request.title)}</h3><p>${escapeHtml(request.note)} Cantidades leídas del baúl; si están en la bolsa del cazador no se cuentan.</p><div class="request-items">${request.items.map(([name, required]) => {
       const item = findItem(name);
       const count = item ? profile.itemCounts.get(item.id) || 0 : 0;
       return `<div class="request-item ${count >= required ? 'enough' : ''}"><strong>${escapeHtml(item?.name || name)}</strong><span>${formatNumber(count)} / ${required} ${count >= required ? '· alcanza' : '· faltan ' + formatNumber(required - count)}</span></div>`;
     }).join('')}</div></div>`).join('<div class="request-separator"></div>');
+    renderMaterialSources(profile);
     renderWeaponPlanner(profile);
     renderWeaponShoppingList(profile);
+  }
+
+  function itemResultsForRank(results, rankKey) {
+    const rank = rankKey === 'low' ? 'Low' : 'High';
+    return (results || []).filter((result) => result.itemId === appState.materialSourceItemId
+      && (appState.materialSourceRank === 'all' || rank === appState.materialSourceRank));
+  }
+
+  function collectMaterialSources(profile) {
+    const sourcesByMonster = new Map();
+    const rankPairs = appState.materialSourceRank === 'all'
+      ? [['Low', 'low'], ['High', 'high']]
+      : [[appState.materialSourceRank, appState.materialSourceRank === 'High' ? 'high' : 'low']];
+    const addMonsterSource = (monster, rankKey, method, detail, result) => {
+      const rank = rankKey === 'low' ? 'Low' : 'High';
+      const groupKey = `${monster.id}:${rank}`;
+      if (!sourcesByMonster.has(groupKey)) sourcesByMonster.set(groupKey, { monster, rank, rows: [] });
+      sourcesByMonster.get(groupKey).rows.push({ method, detail, chance: result.chance, count: result.count });
+    };
+    const addDropTable = (monster, table, rankKey, method, detail) => {
+      for (const result of itemResultsForRank(table?.[rankKey], rankKey)) addMonsterSource(monster, rankKey, method, detail, result);
+    };
+
+    for (const monster of DATA.monsterDrops || []) {
+      for (const [, rankKey] of rankPairs) {
+        for (const zone of monster.carves || []) addDropTable(monster, zone, rankKey, 'Tallado', `${zone.name} · ${zone.count ?? 1} intentos`);
+        for (const part of monster.breakables || []) addDropTable(monster, part, rankKey, 'Rotura', part.name);
+        addDropTable(monster, monster.capture, rankKey, 'Captura', monster.capture?.health != null ? `Listo para captura: ${monster.capture.health}% de vida` : 'Recompensa de captura');
+        addDropTable(monster, monster.shiny, rankKey, 'Brillo', monster.shiny?.action && monster.shiny.action !== 'Something' ? `Acción: ${monster.shiny.action}` : 'Objeto de brillo');
+        for (const variant of monster.variants || []) {
+          for (const zone of variant.carves || []) addDropTable(monster, zone, rankKey, 'Tallado', `${variant.name} · ${zone.name} · ${zone.count ?? 1} intentos`);
+          addDropTable(monster, variant.shiny, rankKey, 'Brillo', `${variant.name} · objeto de brillo`);
+        }
+      }
+    }
+
+    const monsterGroups = [...sourcesByMonster.values()].sort((a, b) => a.monster.name.localeCompare(b.monster.name) || (a.rank === 'Low' ? -1 : 1));
+    const monsterIds = new Set(monsterGroups.map((group) => group.monster.id));
+    const monsterMarkup = monsterGroups.length ? monsterGroups.map((group) => {
+      const rows = group.rows.sort((a, b) => a.method.localeCompare(b.method) || String(a.detail).localeCompare(String(b.detail)) || (b.chance || 0) - (a.chance || 0));
+      return `<details class="source-drop-group"><summary><span><strong>${escapeHtml(group.monster.name)}</strong><small>${escapeHtml(MONSTER_TYPE_LABELS[group.monster.type] || group.monster.type || 'Especie')}</small></span><span class="source-rank">${escapeHtml(QUEST_RANK_LABELS[group.rank])} · ${rows.length} resultado${rows.length === 1 ? '' : 's'}</span></summary><div class="source-drop-rows">${rows.map((row) => `<div class="source-drop-row"><strong>${escapeHtml(row.method)}</strong><span>${escapeHtml(row.detail || '')}</span><b>${Number.isFinite(row.chance) ? `${formatNumber(row.chance)}%` : '—'}${row.count > 1 ? ` · ×${formatNumber(row.count)}` : ''}</b></div>`).join('')}</div></details>`;
+    }).join('') : '<div class="source-empty">No hay resultados de monstruo para este material en las tablas incluidas.</div>';
+
+    const questSources = [];
+    for (const quest of DATA.quests) {
+      if (appState.materialSourceRank !== 'all' && quest.rank !== appState.materialSourceRank) continue;
+      for (const reward of quest.secondaryRewards || []) {
+        if (reward.itemId === appState.materialSourceItemId) questSources.push({ quest, reward, subquest: false });
+      }
+      for (const [index, subquest] of (quest.subquests || []).entries()) {
+        for (const reward of subquest.secondaryRewards || []) {
+          if (reward.itemId === appState.materialSourceItemId) questSources.push({ quest, reward, subquest: true, subquestIndex: index + 1 });
+        }
+      }
+    }
+    const questMarkup = questSources.length ? `<div class="source-quest-list">${questSources.sort((a, b) => (a.quest.rank === b.quest.rank ? a.quest.name.localeCompare(b.quest.name) : a.quest.rank === 'Low' ? -1 : 1)).slice(0, 60).map(({ quest, reward, subquest, subquestIndex }) => {
+      const status = questSaveStatus(profile, quest);
+      return `<article class="source-quest-row"><div><strong>${escapeHtml(quest.name)}${subquest ? ` · submisión ${subquestIndex}` : ''}</strong><small>${escapeHtml(QUEST_REGION_LABELS[quest.region] || quest.region)} · ${escapeHtml(QUEST_RANK_LABELS[quest.rank] || quest.rank)}${quest.location ? ` · ${escapeHtml(quest.location)}` : ''} · ${escapeHtml(status.label)}</small></div><span>${formatNumber(reward.chance)}% · ×${formatNumber(reward.count)}</span></article>`;
+    }).join('')}</div>${questSources.length > 60 ? `<p class="small-note">Se muestran 60 de ${formatNumber(questSources.length)} misiones.</p>` : ''}` : '<div class="source-empty">No hay recompensas secundarias de misión para este material en las tablas incluidas.</div>';
+
+    const objectiveQuests = DATA.quests.filter((quest) => ['hunt', 'capture', 'slay'].includes(quest.goal)
+      && Object.keys(quest.targets || {}).some((id) => monsterIds.has(Number(id)))
+      && (appState.materialSourceRank === 'all' || quest.rank === appState.materialSourceRank));
+    const objectiveMarkup = objectiveQuests.length ? `<div class="source-quest-list">${objectiveQuests.sort((a, b) => (a.rank === b.rank ? a.name.localeCompare(b.name) : a.rank === 'Low' ? -1 : 1)).slice(0, 40).map((quest) => {
+      const targets = Object.entries(quest.targets || {}).filter(([id]) => monsterIds.has(Number(id))).map(([id, count]) => `${escapeHtml(MONSTER_NAMES.get(Number(id)) || `Especie ${id}`)}${count > 1 ? ` ×${formatNumber(count)}` : ''}`).join(', ');
+      const status = questSaveStatus(profile, quest);
+      return `<article class="source-quest-row"><div><strong>${escapeHtml(quest.name)}</strong><small>${escapeHtml(QUEST_REGION_LABELS[quest.region] || quest.region)} · ${escapeHtml(QUEST_RANK_LABELS[quest.rank] || quest.rank)} · ${escapeHtml(targets)} · ${escapeHtml(status.label)}</small></div><span>${formatNumber(quest.hrp || 0)} HRP</span></article>`;
+    }).join('')}</div>` : '<div class="source-empty">No aparecen misiones catalogadas con estos monstruos como objetivo principal.</div>';
+    const itemName = ITEM_NAMES.get(appState.materialSourceItemId) || `Objeto ${hex(appState.materialSourceItemId)}`;
+    return `<div class="source-result-heading"><div><h4>${escapeHtml(itemName)}</h4><span>En el baúl: ${formatNumber(profile.itemCounts.get(appState.materialSourceItemId) || 0)}</span></div><button type="button" class="material-guide-link" data-clear-material-source>Limpiar selección</button></div><div class="source-result-section"><h5>Botín de monstruos</h5><p>Porcentaje y cantidad por resultado, según la tabla indicada.</p>${monsterMarkup}</div><div class="source-result-section"><h5>Recompensas secundarias de misión</h5><p>Chance de la tabla secundaria; no representa una recompensa garantizada.</p>${questMarkup}</div>${monsterIds.size ? `<div class="source-result-section"><h5>Misiones con estos monstruos como objetivo</h5><p>Sirve para elegir una misión de caza; no indica que esté desbloqueada.</p>${objectiveMarkup}</div>` : ''}`;
+  }
+
+  function renderMaterialSources(profile) {
+    const search = appState.materialSourceSearch.trim().toLocaleLowerCase('es');
+    const selected = DATA.items.find((item) => item.id === appState.materialSourceItemId);
+    let matches;
+    if (search) {
+      matches = DATA.items.filter((item) => item.name.toLocaleLowerCase('es').includes(search))
+        .sort((a, b) => Number(b.name.toLocaleLowerCase('es').startsWith(search)) - Number(a.name.toLocaleLowerCase('es').startsWith(search)) || a.name.localeCompare(b.name))
+        .slice(0, 24).map((item) => ({ item, missing: null }));
+    } else {
+      const needed = new Map();
+      for (const goal of appState.weaponShoppingList) {
+        for (const requirement of goal.requirements) needed.set(requirement.id, (needed.get(requirement.id) || 0) + requirement.required * goal.copies);
+      }
+      matches = [...needed.entries()].map(([id, required]) => ({ item: DATA.items.find((entry) => entry.id === id), missing: Math.max(0, required - (profile.itemCounts.get(id) || 0)) }))
+        .filter((entry) => entry.item && entry.missing > 0)
+        .sort((a, b) => b.missing - a.missing || a.item.name.localeCompare(b.item.name))
+        .slice(0, 12);
+    }
+    const matchMarkup = matches.length ? matches.map(({ item, missing }) => `<button type="button" class="source-item-button ${selected?.id === item.id ? 'selected' : ''}" data-material-source-pick="${item.id}"><strong>${escapeHtml(item.name)}</strong><small>${missing == null ? `En baúl: ${formatNumber(profile.itemCounts.get(item.id) || 0)}` : `Faltan: ${formatNumber(missing)}`}</small></button>`).join('')
+      : search ? '<div class="source-empty">No encontré materiales con ese nombre.</div>'
+        : '<div class="source-empty">Escribe un nombre o agrega una ruta al plan de armas para ver aquí tus faltantes.</div>';
+    $('#materialSourceMatches').innerHTML = matchMarkup;
+    $('#materialSourceResults').innerHTML = selected
+      ? collectMaterialSources(profile)
+      : '<div class="source-empty">Elige un material de los resultados para ver sus fuentes conocidas.</div>';
+  }
+
+  function openMaterialSource(itemId) {
+    const item = DATA.items.find((entry) => entry.id === Number(itemId));
+    const profile = currentProfile();
+    if (!item || !profile) return;
+    appState.materialSourceItemId = item.id;
+    appState.materialSourceSearch = item.name;
+    $('#materialSourceSearch').value = item.name;
+    showView('materials');
+    renderMaterialSources(profile);
+    $('#materialSourcePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('#materialSourceResults').focus({ preventScroll: true });
   }
 
   function weaponPathOptions(weapons, targetId) {
@@ -922,6 +1062,8 @@
       }
       persistWeaponShoppingList();
       renderWeaponShoppingList(currentProfile());
+      const profile = currentProfile();
+      if (profile) renderMaterialSources(profile);
       notify(`Objetivo agregado a la lista: ${target?.name || 'arma seleccionada'}.`);
     });
   }
@@ -945,7 +1087,7 @@
     }).sort((a, b) => a.name.localeCompare(b.name));
     const missingUnits = rows.reduce((sum, row) => sum + row.missing, 0);
     const goalMarkup = goals.map((goal, index) => `<div class="weapon-goal-row"><div><strong>${escapeHtml(goal.name)} <span>×${formatNumber(goal.copies)}</span></strong><small>${escapeHtml(goal.route)}</small></div><div class="weapon-goal-controls"><button type="button" class="goal-quantity" data-change-weapon-goal="${index}" data-delta="-1" aria-label="Quitar una copia de ${escapeHtml(goal.name)}">−</button><button type="button" class="goal-quantity" data-change-weapon-goal="${index}" data-delta="1" aria-label="Agregar una copia de ${escapeHtml(goal.name)}">+</button><button type="button" class="goal-remove" data-remove-weapon-goal="${index}" aria-label="Quitar ${escapeHtml(goal.name)} de la lista">Quitar</button></div></div>`).join('');
-    root.innerHTML = `<section class="weapon-shopping panel"><div class="panel-heading"><div><h3>Lista de materiales para tus armas</h3><div class="panel-subtitle">${formatNumber(goals.reduce((sum, goal) => sum + goal.copies, 0))} copias · ${formatNumber(rows.length)} materiales distintos · cantidades del baúl descontadas una sola vez</div></div><button class="button button-secondary" type="button" data-clear-weapon-goals>Vaciar lista</button></div><div class="weapon-goals">${goalMarkup}</div><div class="weapon-shopping-summary"><span class="tag ${missingUnits === 0 ? 'good' : 'warn'}" role="status" aria-live="polite">${missingUnits === 0 ? 'Tienes todos los materiales' : `Te faltan ${formatNumber(missingUnits)} unidades`}</span><span>El cálculo usa el baúl del cazador seleccionado; no cuenta objetos de la bolsa.</span></div><div class="table-wrap weapon-material-table"><table><thead><tr><th>Material</th><th class="numeric">Total para objetivos</th><th class="numeric">En baúl</th><th class="numeric">Faltan</th></tr></thead><tbody>${rows.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td class="numeric">${formatNumber(row.required)}</td><td class="numeric">${formatNumber(row.owned)}</td><td class="numeric ${row.missing ? 'number-negative' : 'number-positive'}">${formatNumber(row.missing)}</td></tr>`).join('')}</tbody></table></div><p class="small-note">La lista se guarda en este equipo, separada de la partida. Solo se incluyen recetas de armas del catálogo; los costos de forja de armaduras no están disponibles.</p></section>`;
+    root.innerHTML = `<section class="weapon-shopping panel"><div class="panel-heading"><div><h3>Lista de materiales para tus armas</h3><div class="panel-subtitle">${formatNumber(goals.reduce((sum, goal) => sum + goal.copies, 0))} copias · ${formatNumber(rows.length)} materiales distintos · cantidades del baúl descontadas una sola vez</div></div><button class="button button-secondary" type="button" data-clear-weapon-goals>Vaciar lista</button></div><div class="weapon-goals">${goalMarkup}</div><div class="weapon-shopping-summary"><span class="tag ${missingUnits === 0 ? 'good' : 'warn'}" role="status" aria-live="polite">${missingUnits === 0 ? 'Tienes todos los materiales' : `Te faltan ${formatNumber(missingUnits)} unidades`}</span><span>El cálculo usa el baúl del cazador seleccionado; no cuenta objetos de la bolsa.</span></div><div class="table-wrap weapon-material-table"><table><thead><tr><th>Material</th><th class="numeric">Total para objetivos</th><th class="numeric">En baúl</th><th class="numeric">Faltan</th></tr></thead><tbody>${rows.map((row) => `<tr><td>${escapeHtml(row.name)} <button type="button" class="material-guide-link" data-material-source-pick="${row.id}">Buscar fuentes</button></td><td class="numeric">${formatNumber(row.required)}</td><td class="numeric">${formatNumber(row.owned)}</td><td class="numeric ${row.missing ? 'number-negative' : 'number-positive'}">${formatNumber(row.missing)}</td></tr>`).join('')}</tbody></table></div><p class="small-note">La lista se guarda en este equipo, separada de la partida. Solo se incluyen recetas de armas del catálogo; los costos de forja de armaduras no están disponibles.</p></section>`;
   }
 
   function renderSaveInspector() {
@@ -1374,7 +1516,7 @@
       online: ['RANGO DE CAZADOR', 'Loc Lac online'],
       village: ['PROGRESO DE HISTORIA', 'Aldea de Moga'],
       quests: ['CATÁLOGO DE MISIONES', 'Explorar misiones'],
-      hunts: ['OBJETIVOS COMPLETADOS', 'Monstruos'],
+      hunts: ['GUÍA DE CAZA', 'Guía de monstruos'],
       materials: ['BAÚL DE OBJETOS', 'Materiales'],
       save: ['DIAGNÓSTICO DE PARTIDA', 'Inspector de save'],
       history: ['PUNTOS DE CONTROL LOCALES', 'Historial de progreso'],
@@ -1388,11 +1530,14 @@
 
   const questGoals = [...new Set(DATA.quests.map((quest) => quest.goal).filter(Boolean))]
     .sort((a, b) => (QUEST_GOAL_LABELS[a] || a).localeCompare(QUEST_GOAL_LABELS[b] || b));
+  const questLocations = [...new Set(DATA.quests.map((quest) => quest.location).filter(Boolean))].sort((a, b) => a.localeCompare(b));
   $('#questGoal').insertAdjacentHTML('beforeend', questGoals.map((goal) => `<option value="${escapeHtml(goal)}">${escapeHtml(QUEST_GOAL_LABELS[goal] || goal)}</option>`).join(''));
+  $('#questLocation').insertAdjacentHTML('beforeend', questLocations.map((location) => `<option value="${escapeHtml(location)}">${escapeHtml(location)}</option>`).join(''));
   const updateQuestFilters = () => {
     appState.questSearch = $('#questSearch').value;
     appState.questRegion = $('#questRegion').value;
     appState.questRank = $('#questRank').value;
+    appState.questLocation = $('#questLocation').value;
     appState.questGoal = $('#questGoal').value;
     appState.questProgression = $('#questProgression').value;
     appState.questStatus = $('#questStatus').value;
@@ -1405,17 +1550,31 @@
     appState.questSearch = '';
     appState.questRegion = 'all';
     appState.questRank = 'all';
+    appState.questLocation = 'all';
     appState.questGoal = 'all';
     appState.questProgression = 'all';
     appState.questStatus = 'all';
     $('#questSearch').value = '';
     $('#questRegion').value = 'all';
     $('#questRank').value = 'all';
+    $('#questLocation').value = 'all';
     $('#questGoal').value = 'all';
     $('#questProgression').value = 'all';
     $('#questStatus').value = 'all';
     const profile = currentProfile();
     if (profile) renderQuestCatalog(profile);
+  });
+
+  $('#materialSourceSearch').addEventListener('input', (event) => {
+    appState.materialSourceSearch = event.target.value;
+    appState.materialSourceItemId = null;
+    const profile = currentProfile();
+    if (profile) renderMaterialSources(profile);
+  });
+  $('#materialSourceRank').addEventListener('change', (event) => {
+    appState.materialSourceRank = event.target.value;
+    const profile = currentProfile();
+    if (profile) renderMaterialSources(profile);
   });
 
   $('#saveFiles').addEventListener('change', (event) => safelyLoadSaves(event.target.files));
@@ -1486,6 +1645,19 @@
   document.addEventListener('click', (event) => {
     const go = event.target.closest('[data-goto]');
     if (go) showView(go.dataset.goto);
+    const materialSourcePick = event.target.closest('[data-material-source-pick]');
+    if (materialSourcePick) {
+      openMaterialSource(materialSourcePick.dataset.materialSourcePick);
+      return;
+    }
+    if (event.target.closest('[data-clear-material-source]')) {
+      appState.materialSourceItemId = null;
+      appState.materialSourceSearch = '';
+      $('#materialSourceSearch').value = '';
+      const profile = currentProfile();
+      if (profile) renderMaterialSources(profile);
+      return;
+    }
     const changeGoal = event.target.closest('[data-change-weapon-goal]');
     const removeGoal = event.target.closest('[data-remove-weapon-goal]');
     const removeSnapshot = event.target.closest('[data-delete-snapshot]');
@@ -1527,14 +1699,17 @@
       if (goal.copies <= 0) appState.weaponShoppingList.splice(Number(changeGoal.dataset.changeWeaponGoal), 1);
       persistWeaponShoppingList();
       renderWeaponShoppingList(profile);
+      renderMaterialSources(profile);
     } else if (removeGoal) {
       appState.weaponShoppingList.splice(Number(removeGoal.dataset.removeWeaponGoal), 1);
       persistWeaponShoppingList();
       renderWeaponShoppingList(profile);
+      renderMaterialSources(profile);
     } else if (event.target.closest('[data-clear-weapon-goals]')) {
       appState.weaponShoppingList = [];
       persistWeaponShoppingList();
       renderWeaponShoppingList(profile);
+      renderMaterialSources(profile);
     }
   });
   document.addEventListener('change', (event) => {

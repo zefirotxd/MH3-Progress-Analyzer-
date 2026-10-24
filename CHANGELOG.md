@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0-preview.1 · compilación local
+
+- Expand the offline catalog with 35 monsters, 35 material-drop tables and 172 quests; include hitzones, status tolerances, monster drops, quest payouts and secondary rewards from `mh3-data` 2.0.2.
+- Add a material source finder for monster carves, breakable parts, capture, shiny drops and quest secondary rewards, with low/high-rank filters and one-click links from weapon shortages and item-box entries.
+- Add a monster field guide with hitzone tables and status buildup thresholds while keeping save-flag objective counts separate from lifetime hunt counts.
+- Enrich quest browsing with map, contract, zenny payout, HRP and secondary reward data; add a map filter and preserve clear warnings about partial event/arena data and quest unlock state.
+- Document upstream data coverage and provenance; do not infer map gathering nodes, event availability or guaranteed rewards.
+
 ## 0.3.0-preview.6 · compilación local
 
 - Add local progress checkpoints with RC, HRP, zenny, completed-quest flags and item-box counts; never store raw save files.

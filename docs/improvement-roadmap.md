@@ -17,6 +17,9 @@
 - Export/import versioned share codes for armor pieces and decorations; validate armor style, piece IDs and jewel slot usage before applying a code.
 - Save local read-only progress checkpoints and compare rank, HRP, zenny, quest flags and item-box counts without retaining raw save bytes.
 - Save, reload, remove and share up to 20 named armor-set presets locally; revalidate their pieces and jewel slots against the current catalog.
+- Bundle all 35 monster entries with hitzones, status tolerances, carving/break/capture/shiny tables; enrich 172 quest records with map, payout and secondary-reward data from the pinned upstream source.
+- Find material sources across monster reward tables and secondary quest rewards, and link weapon-list shortages directly to the source browser.
+- Show explicit coverage notes for community-recovered data, partial event/arena quests and unavailable map gathering nodes.
 - Keep upstream data snapshots committed so app builds remain offline; provide a separate maintainer sync command.
 
 ## Next improvements, ordered by user value and evidence
@@ -29,8 +32,8 @@
 ### 2. Help answer “what do I need next?”
 
 - Add armor costs to the shopping list only when a reliable recipe source is available; the current catalog has no armor forge recipes.
-- Link missing materials to quests only after adding verified quest reward and gathering-node data; the bundled quest catalog currently describes objectives, not acquisition rewards.
-- Add optional drop-rate summaries only after checking source coverage; do not make a partial event-quest catalog look complete.
+- Add map gathering-node sources only after finding a reliable dataset with exact map, area, node and rank coverage; the current upstream source has none.
+- Expand event/arena reward coverage only when a source can identify region/version and known omissions; do not imply the partial list is complete.
 - Mark quest requirements for specific progression gates with explicit evidence, without implying that every incomplete quest is currently available.
 
 ### 3. Learn the save format safely

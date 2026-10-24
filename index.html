@@ -95,9 +95,10 @@
         </section>
 
         <section class="view" id="view-hunts">
-          <div class="section-intro"><div><div class="eyebrow">OBJETIVOS COMPLETADOS</div><h2>Monstruos en misiones terminadas</h2></div><p>Esto refleja objetivos de misiones marcadas como completadas. No es un contador total de capturas o cacerías.</p></div>
+          <div class="section-intro"><div><div class="eyebrow">GUÍA DE CAZA</div><h2>Monstruos, zonas y estados</h2></div><p>Consulta hitzones, afinidades elementales y tolerancias a estados. El progreso de misiones se muestra aparte: no equivale a un contador de cacerías.</p></div>
           <div class="toolbar"><input id="monsterSearch" type="search" placeholder="Buscar monstruo…"><span id="monsterCount" class="muted"></span></div>
           <div class="monster-grid" id="monsterGrid"></div>
+          <p class="small-note">Hitzones y tolerancias provienen del catálogo <code>mh3-data</code> 2.0.2. Las especies sin una tabla registrada se muestran sin completar esos datos; el conteo de progreso usa solo objetivos de misiones marcadas.</p>
         </section>
 
         <section class="view" id="view-quests">
@@ -106,19 +107,27 @@
             <label class="quest-search-label">Buscar misión o objetivo<input id="questSearch" type="search" placeholder="Nombre, monstruo u objeto…"></label>
             <label>Zona<select id="questRegion"><option value="all">Todas</option><option value="Village">Aldea de Moga</option><option value="City">Loc Lac</option></select></label>
             <label>Rango<select id="questRank"><option value="all">Todos</option><option value="Low">Bajo</option><option value="High">Alto</option></select></label>
+            <label>Mapa<select id="questLocation"><option value="all">Todos</option></select></label>
             <label>Objetivo<select id="questGoal"><option value="all">Todos</option></select></label>
             <label>Progresión<select id="questProgression"><option value="all">Todas</option><option value="online-key">Clave · Loc Lac</option><option value="online-urgent">Urgente · Loc Lac</option><option value="village-key">Clave · Moga</option><option value="village-urgent">Urgente · Moga</option><option value="other">Sin rol principal</option></select></label>
             <label>Registro del save<select id="questStatus"><option value="all">Todos</option><option value="completed">Completadas</option><option value="not-completed">Sin completar · registrables</option><option value="untracked">Sin bandera en el save</option></select></label>
             <button type="button" class="button button-secondary" id="resetQuestFilters">Limpiar filtros</button>
           </div>
-          <div class="quest-catalog-toolbar"><span id="questCount" class="muted" role="status" aria-live="polite"></span><span class="muted">Objetivos y tipos según el catálogo local · sin tablas de recompensas</span></div>
+          <div class="quest-catalog-toolbar"><span id="questCount" class="muted" role="status" aria-live="polite"></span><span class="muted">Incluye mapa, contrato, HRP y recompensas secundarias cuando están catalogados</span></div>
           <div class="quest-catalog" id="questCatalog"></div>
-          <p class="small-note">El catálogo no contiene tablas completas de recompensas ni confirma disponibilidad/desbloqueo de cada misión. El estado se basa exclusivamente en las banderas que esta versión puede leer.</p>
+          <p class="small-note">El catálogo de misiones de evento/arena es parcial. Una misión sin completar en el save no necesariamente está desbloqueada; las recompensas secundarias usan las tablas publicadas por mh3-data.</p>
         </section>
 
         <section class="view" id="view-materials">
           <div class="section-intro"><div><div class="eyebrow">BAÚL DE OBJETOS</div><h2>Lo que tienes guardado</h2></div><p>Lectura de los espacios del baúl. No incluye objetos que estén solamente en la bolsa del cazador.</p></div>
           <div class="request-panel panel" id="requestPanel"></div>
+          <article class="panel material-source-panel" id="materialSourcePanel">
+            <div class="panel-heading"><div><h3>¿Dónde consigo un material?</h3><div class="panel-subtitle">Busca una pieza y revisa tallados, roturas, capturas, brillos y recompensas de misión.</div></div><span class="tag">Catálogo local</span></div>
+            <div class="source-controls"><label for="materialSourceSearch">Buscar material<input id="materialSourceSearch" type="search" placeholder="Ej.: Placa Rathalos…" autocomplete="off"></label><label for="materialSourceRank">Rango<select id="materialSourceRank"><option value="all">Bajo y alto</option><option value="Low">Bajo</option><option value="High">Alto</option></select></label></div>
+            <div id="materialSourceMatches" class="source-item-matches"></div>
+            <div id="materialSourceResults" class="source-results" role="status" aria-live="polite" tabindex="-1"><div class="source-empty">Escribe el nombre de un material y elige un resultado. También puedes abrir esta búsqueda desde un faltante de tu lista de armas.</div></div>
+            <p class="small-note">Fuente: mh3-data 2.0.2, parcialmente recuperada de una web archivada. Las misiones de evento/arena no están completas; la app no infiere desbloqueos ni cuenta recolecciones de mapa que no estén en estas tablas.</p>
+          </article>
           <article class="panel weapon-planner">
             <div class="panel-heading"><div><h3>Plan de forja de armas</h3><div class="panel-subtitle">Calcula materiales desde cero o desde un arma que ya tienes.</div></div></div>
             <div class="weapon-controls">
@@ -133,7 +142,7 @@
             <div id="weaponShoppingList"></div>
           </article>
           <div class="toolbar"><input id="itemSearch" type="search" placeholder="Buscar material u objeto…"><span id="itemCount" class="muted"></span></div>
-          <div class="table-wrap"><table><thead><tr><th>Objeto</th><th class="numeric">Cantidad en baúl</th></tr></thead><tbody id="itemRows"></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th>Objeto</th><th class="numeric">Cantidad en baúl</th><th>Guía</th></tr></thead><tbody id="itemRows"></tbody></table></div>
         </section>
 
         <section class="view" id="view-save">
@@ -169,7 +178,7 @@
         </section>
       </div>
 
-      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.3.0-preview.6</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
+      <footer class="app-footer"><span>MH3 Progress Analyzer <b>v0.4.0-preview.1</b></span><span>Los datos de la partida permanecen en este equipo.</span></footer>
     </main>
   </div>
   <dialog id="saveCandidateDialog" class="save-candidate-dialog">
